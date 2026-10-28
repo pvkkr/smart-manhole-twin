@@ -7,6 +7,7 @@ import { ChamberModel } from './ChamberModel';
 import { WaterVolume } from './WaterVolume';
 import { ManholeCover } from './ManholeCover';
 import { SensorMarkers } from './SensorMarkers';
+import { CanvasErrorBoundary } from '../common/CanvasErrorBoundary';
 import { TelemetryState, ChamberConfig } from '../../types/telemetry';
 import {
   Eye,
@@ -126,69 +127,71 @@ export const ManholeScene = ({
 
       {/* 3D Canvas */}
       <div className="w-full h-full flex-1">
-        <Canvas
-          shadows
-          camera={{ position: [4.5, 3.2, 5.5], fov: 45 }}
-          gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
-        >
-          {/* Lighting */}
-          <ambientLight intensity={0.65} />
-          <directionalLight
-            position={[6, 10, 6]}
-            intensity={1.2}
-            castShadow
-            shadow-mapSize-width={1024}
-            shadow-mapSize-height={1024}
-          />
-          {/* Sub-surface amber/cyan inspection light */}
-          <pointLight position={[0, 0.5, 0]} intensity={0.8} color="#38bdf8" distance={6} />
-          <pointLight position={[0, -1.2, 0]} intensity={0.4} color="#f59e0b" distance={4} />
-
-          <Suspense fallback={null}>
-            {/* Ground Grid */}
-            <Grid
-              position={[0, -2.15, 0]}
-              args={[20, 20]}
-              cellSize={0.5}
-              cellThickness={0.5}
-              cellColor="#1e293b"
-              sectionSize={2.0}
-              sectionThickness={1.0}
-              sectionColor="#334155"
-              fadeDistance={18}
+        <CanvasErrorBoundary fallbackTitle="Manhole 3D Twin Viewport">
+          <Canvas
+            shadows
+            camera={{ position: [4.5, 3.2, 5.5], fov: 45 }}
+            gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping }}
+          >
+            {/* Lighting */}
+            <ambientLight intensity={0.65} />
+            <directionalLight
+              position={[6, 10, 6]}
+              intensity={1.2}
+              castShadow
+              shadow-mapSize-width={1024}
+              shadow-mapSize-height={1024}
             />
+            {/* Sub-surface amber/cyan inspection light */}
+            <pointLight position={[0, 0.5, 0]} intensity={0.8} color="#38bdf8" distance={6} />
+            <pointLight position={[0, -1.2, 0]} intensity={0.4} color="#f59e0b" distance={4} />
 
-            {/* Chamber Model */}
-            <ChamberModel isCutaway={isCutaway} />
+            <Suspense fallback={null}>
+              {/* Ground Grid */}
+              <Grid
+                position={[0, -2.15, 0]}
+                args={[20, 20]}
+                cellSize={0.5}
+                cellThickness={0.5}
+                cellColor="#1e293b"
+                sectionSize={2.0}
+                sectionThickness={1.0}
+                sectionColor="#334155"
+                fadeDistance={18}
+              />
 
-            {/* Dynamic Water Volume */}
-            <WaterVolume telemetry={telemetry} config={config} />
+              {/* Chamber Model */}
+              <ChamberModel isCutaway={isCutaway} />
 
-            {/* Manhole Cover (Cast-iron lid with MPU6050 and hinge) */}
-            <ManholeCover
-              telemetry={telemetry}
-              onSelectSensor={onSelectSensor}
-              selectedSensor={selectedSensor}
+              {/* Dynamic Water Volume */}
+              <WaterVolume telemetry={telemetry} config={config} />
+
+              {/* Manhole Cover (Cast-iron lid with MPU6050 and hinge) */}
+              <ManholeCover
+                telemetry={telemetry}
+                onSelectSensor={onSelectSensor}
+                selectedSensor={selectedSensor}
+              />
+
+              {/* Sensor 3D Markers & Callouts */}
+              <SensorMarkers
+                telemetry={telemetry}
+                config={config}
+                selectedSensor={selectedSensor}
+                onSelectSensor={onSelectSensor}
+              />
+            </Suspense>
+
+            <OrbitControls
+              ref={controlsRef}
+              enableDamping
+              dampingFactor={0.06}
+              minDistance={2.5}
+              maxDistance={14}
+              maxPolarAngle={Math.PI / 2 + 0.15} // Prevent looking completely underneath ground
             />
-
-            {/* Sensor 3D Markers & Callouts */}
-            <SensorMarkers
-              telemetry={telemetry}
-              config={config}
-              selectedSensor={selectedSensor}
-              onSelectSensor={onSelectSensor}
-            />
-          </Suspense>
-
-          <OrbitControls
-            ref={controlsRef}
-            enableDamping
-            dampingFactor={0.06}
-            minDistance={2.5}
-            maxDistance={14}
-            maxPolarAngle={Math.PI / 2 + 0.15} // Prevent looking completely underneath ground
-          />
-        </Canvas>
+          </Canvas>
+        </CanvasErrorBoundary>
       </div>
 
       {/* Viewport Bottom Overlay Status Bar */}

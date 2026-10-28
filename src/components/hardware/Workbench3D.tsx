@@ -6,6 +6,7 @@ import * as THREE from 'three';
 import { CircuitComponent, WireConnection } from '../../types/circuit';
 import { ComponentModel3D } from './ComponentModels3D';
 import { Wire3D } from './Wire3D';
+import { CanvasErrorBoundary } from '../common/CanvasErrorBoundary';
 import { RotateCcw, Layers, Compass, Scissors, PlusCircle } from 'lucide-react';
 
 interface Workbench3DProps {
@@ -101,80 +102,82 @@ export const Workbench3D = ({
 
       {/* 3D Canvas */}
       <div className="w-full h-full flex-1">
-        <Canvas
-          shadows
-          camera={{ position: [0, 11, 7], fov: 42 }}
-          gl={{ antialias: true }}
-          onClick={() => {
-            onSelectComponent(null);
-            onSelectWire(null);
-          }}
-        >
-          <ambientLight intensity={0.7} />
-          <directionalLight
-            position={[8, 14, 8]}
-            intensity={1.2}
-            castShadow
-            shadow-mapSize-width={1024}
-            shadow-mapSize-height={1024}
-          />
-          <pointLight position={[0, 4, 0]} intensity={0.5} color="#38bdf8" />
-
-          <Suspense fallback={null}>
-            {/* ESD Anti-Static Mat Grid */}
-            <Grid
-              position={[0, 0, 0]}
-              args={[18, 14]}
-              cellSize={0.5}
-              cellThickness={0.5}
-              cellColor="#1e293b"
-              sectionSize={2.0}
-              sectionThickness={1.0}
-              sectionColor="#334155"
-              fadeDistance={18}
+        <CanvasErrorBoundary fallbackTitle="3D Electronics Workbench">
+          <Canvas
+            shadows
+            camera={{ position: [0, 11, 7], fov: 42 }}
+            gl={{ antialias: true }}
+            onClick={() => {
+              onSelectComponent(null);
+              onSelectWire(null);
+            }}
+          >
+            <ambientLight intensity={0.7} />
+            <directionalLight
+              position={[8, 14, 8]}
+              intensity={1.2}
+              castShadow
+              shadow-mapSize-width={1024}
+              shadow-mapSize-height={1024}
             />
+            <pointLight position={[0, 4, 0]} intensity={0.5} color="#38bdf8" />
 
-            {/* Workbench Table Surface */}
-            <mesh position={[0, -0.05, 0]} receiveShadow>
-              <boxGeometry args={[16, 0.1, 12]} />
-              <meshStandardMaterial color="#0f172a" roughness={0.8} metalness={0.1} />
-            </mesh>
-
-            {/* Components */}
-            {components.map((comp) => (
-              <ComponentModel3D
-                key={comp.id}
-                component={comp}
-                isSelected={selectedComponentId === comp.id}
-                selectedPinId={selectedComponentId === comp.id ? selectedPinId : null}
-                highlightedPinIds={highlightedPinIds}
-                wiringSourcePin={wiringSourcePin}
-                onSelectComponent={onSelectComponent}
-                onSelectPin={onSelectPin}
+            <Suspense fallback={null}>
+              {/* ESD Anti-Static Mat Grid */}
+              <Grid
+                position={[0, 0, 0]}
+                args={[18, 14]}
+                cellSize={0.5}
+                cellThickness={0.5}
+                cellColor="#1e293b"
+                sectionSize={2.0}
+                sectionThickness={1.0}
+                sectionColor="#334155"
+                fadeDistance={18}
               />
-            ))}
 
-            {/* 3D Curved Spline Wires */}
-            {wires.map((wire) => (
-              <Wire3D
-                key={wire.id}
-                wire={wire}
-                components={components}
-                isSelected={selectedWireId === wire.id || wire.netName === highlightedNetName}
-                onSelectWire={onSelectWire}
-              />
-            ))}
-          </Suspense>
+              {/* Workbench Table Surface */}
+              <mesh position={[0, -0.05, 0]} receiveShadow>
+                <boxGeometry args={[16, 0.1, 12]} />
+                <meshStandardMaterial color="#0f172a" roughness={0.8} metalness={0.1} />
+              </mesh>
 
-          <OrbitControls
-            ref={controlsRef}
-            enableDamping
-            dampingFactor={0.06}
-            minDistance={4}
-            maxDistance={22}
-            maxPolarAngle={Math.PI / 2 - 0.05}
-          />
-        </Canvas>
+              {/* Components */}
+              {components.map((comp) => (
+                <ComponentModel3D
+                  key={comp.id}
+                  component={comp}
+                  isSelected={selectedComponentId === comp.id}
+                  selectedPinId={selectedComponentId === comp.id ? selectedPinId : null}
+                  highlightedPinIds={highlightedPinIds}
+                  wiringSourcePin={wiringSourcePin}
+                  onSelectComponent={onSelectComponent}
+                  onSelectPin={onSelectPin}
+                />
+              ))}
+
+              {/* 3D Curved Spline Wires */}
+              {wires.map((wire) => (
+                <Wire3D
+                  key={wire.id}
+                  wire={wire}
+                  components={components}
+                  isSelected={selectedWireId === wire.id || wire.netName === highlightedNetName}
+                  onSelectWire={onSelectWire}
+                />
+              ))}
+            </Suspense>
+
+            <OrbitControls
+              ref={controlsRef}
+              enableDamping
+              dampingFactor={0.06}
+              minDistance={4}
+              maxDistance={22}
+              maxPolarAngle={Math.PI / 2 - 0.05}
+            />
+          </Canvas>
+        </CanvasErrorBoundary>
       </div>
 
       {/* Bottom Hint */}
