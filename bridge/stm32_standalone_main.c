@@ -56,7 +56,11 @@ static void Hardware_SelfConfigure(void) {
     RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_AFIOEN
                   | RCC_APB2ENR_ADC1EN | RCC_APB2ENR_USART1EN;
 
-    // 2. Configure PA0 as Analog Input (MQ-2)
+    // 2. Enable Serial Wire Debug (SWD on PA13/PA14 for OpenOCD) & free JTAG pins
+    // This is equivalent to SYS -> Debug: Serial Wire in STM32CubeMX
+    AFIO->MAPR = (AFIO->MAPR & ~AFIO_MAPR_SWJ_CFG) | AFIO_MAPR_SWJ_CFG_JTAGDISABLE;
+
+    // 3. Configure PA0 as Analog Input (MQ-2)
     GPIOA->CRL &= ~(0xF << 0); // Mode 00, CNF 00 (Analog)
 
     // 3. Configure PA1 as Output Push-Pull 50MHz (HC-SR04 Trig)
