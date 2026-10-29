@@ -404,12 +404,21 @@ export class TelemetryProvider {
     try {
       const channelId = this.config.thingspeakChannelId.trim();
       const apiKey = this.config.thingspeakReadApiKey?.trim() || '';
-      let url = `https://api.thingspeak.com/channels/${channelId}/feeds/last.json`;
+      // Cache-busting timestamp prevents browser and CDN from holding 300-second stale cache
+      const cacheBuster = Date.now();
+      let url = `https://api.thingspeak.com/channels/${channelId}/feeds/last.json?_=${cacheBuster}`;
       if (apiKey) {
-        url += `?api_key=${apiKey}`;
+        url += `&api_key=${apiKey}`;
       }
 
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      });
       if (!response.ok) {
         throw new Error(`ThingSpeak returned status ${response.status}`);
       }

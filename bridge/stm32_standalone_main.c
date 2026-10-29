@@ -531,8 +531,8 @@ int main(void)
             GPIOB->BSRR = (1 << (0 + 16)); // Buzzer OFF
         }
 
-        // 7. Update 16x2 LCD (All-in-One: D, G, T, TL, and SEAL/OPEN visible simultaneously!)
-        if (++lcd_counter >= 3) {
+        // 7. Update 16x2 LCD (Refreshed every 200ms / 5Hz - 0.2s ultra-responsive!)
+        if (++lcd_counter >= 2) {
             lcd_counter = 0;
 
             // Row 1: Distance & Gas (e.g. "D: 25cm   G:790 ")
