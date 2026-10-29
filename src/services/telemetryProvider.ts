@@ -34,7 +34,8 @@ export class TelemetryProvider {
   // WebSocket state for real hardware mode
   private ws: WebSocket | null = null;
   private reconnectTimer: number | null = null;
-  private isHardwareMode: boolean = false;
+  private thingspeakTimer: number | null = null;
+  private currentMode: 'SIMULATION' | 'HARDWARE' | 'THINGSPEAK' = 'SIMULATION';
 
   constructor(initialConfig: ChamberConfig) {
     this.config = initialConfig;
@@ -239,11 +240,13 @@ export class TelemetryProvider {
       systemStatus,
       activeAlarmsCount: 0,
 
-      telemetrySource: this.isHardwareMode ? 'HARDWARE' : 'SIMULATION',
-      connectionStatus: this.isHardwareMode
+      telemetrySource: this.currentMode,
+      connectionStatus: this.currentMode === 'HARDWARE'
         ? this.ws && this.ws.readyState === WebSocket.OPEN
           ? 'CONNECTED'
           : 'RECONNECTING'
+        : this.currentMode === 'THINGSPEAK'
+        ? 'CONNECTED'
         : 'SIMULATED',
       lastPacketTime: now,
     };
@@ -281,22 +284,122 @@ export class TelemetryProvider {
     };
   }
 
-  // --- Hardware Mode & WebSocket Management ---
+  // --- Hardware & Cloud Management ---
 
-  public setMode(mode: 'SIMULATION' | 'HARDWARE') {
+  public setMode(mode: 'SIMULATION' | 'HARDWARE' | 'THINGSPEAK') {
+    this.currentMode = mode;
+    this.currentState.telemetrySource = mode;
+
     if (mode === 'HARDWARE') {
-      this.isHardwareMode = true;
-      this.currentState.telemetrySource = 'HARDWARE';
+      this.stopThingspeakPolling();
       this.currentState.connectionStatus = 'RECONNECTING';
       this.connectHardwareWebSocket();
-    } else {
-      this.isHardwareMode = false;
+    } else if (mode === 'THINGSPEAK') {
       this.disconnectHardwareWebSocket();
-      this.currentState.telemetrySource = 'SIMULATION';
+      this.currentState.connectionStatus = 'RECONNECTING';
+      this.startThingspeakPolling();
+    } else {
+      this.disconnectHardwareWebSocket();
+      this.stopThingspeakPolling();
       this.currentState.connectionStatus = 'SIMULATED';
     }
     this.notify();
   }
+
+  // --- ThingSpeak Cloud Polling ---
+
+  private startThingspeakPolling() {
+    this.stopThingspeakPolling();
+    // Immediate initial fetch
+    this.fetchThingspeakFeed();
+
+    const interval = Math.max(5000, this.config.thingspeakPollIntervalMs || 15000);
+    this.thingspeakTimer = window.setInterval(() => {
+      if (this.currentMode === 'THINGSPEAK') {
+        this.fetchThingspeakFeed();
+      }
+    }, interval);
+  }
+
+  private stopThingspeakPolling() {
+    if (this.thingspeakTimer) {
+      clearInterval(this.thingspeakTimer);
+      this.thingspeakTimer = null;
+    }
+  }
+
+  private async fetchThingspeakFeed() {
+    if (this.currentMode !== 'THINGSPEAK' || !this.config.thingspeakChannelId) {
+      if (this.currentMode === 'THINGSPEAK') {
+        this.currentState.connectionStatus = 'DISCONNECTED';
+        this.notify();
+      }
+      return;
+    }
+
+    try {
+      const channelId = this.config.thingspeakChannelId.trim();
+      const apiKey = this.config.thingspeakReadApiKey?.trim() || '';
+      let url = `https://api.thingspeak.com/channels/${channelId}/feeds/last.json`;
+      if (apiKey) {
+        url += `?api_key=${apiKey}`;
+      }
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`ThingSpeak returned status ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!data || data === -1 || !data.created_at) {
+        throw new Error('No entries found in ThingSpeak channel');
+      }
+
+      this.currentState.connectionStatus = 'CONNECTED';
+      this.currentState.lastPacketTime = new Date(data.created_at).getTime() || Date.now();
+
+      // Field mappings:
+      // field1: distance_cm
+      // field2: gas_adc
+      // field3: temperature_c
+      // field4: tilt_magnitude_deg
+      // field5: cover_open (0 or 1)
+      // field6: status ("NORMAL", "WARNING", "CRITICAL")
+
+      const dist = parseFloat(data.field1) || 0;
+      const gas = parseInt(data.field2, 10) || 0;
+      const temp = parseFloat(data.field3) || 25.0;
+      const tilt = parseFloat(data.field4) || 0;
+      const coverVal = data.field5;
+      const isCoverOpen = coverVal === '1' || coverVal === 'OPEN' || coverVal === 1;
+
+      const payload: RawTelemetryPayload = {
+        distance_cm: dist,
+        distance_valid: dist > 0 ? 1 : 0,
+        temperature_x100: Math.round(temp * 100),
+        temperature_valid: 1,
+        gas_adc: gas,
+        gas_mv: convertGasAdcToMv(gas),
+        cover: isCoverOpen ? 'COVER OPEN' : 'COVER CLOSED',
+        accel_valid: 1,
+        accel_x_mg: 0,
+        accel_y_mg: 0,
+        accel_z_mg: 1000,
+        status: (data.field6 as any) || (isCoverOpen || gas > this.config.gasCriticalAdc ? 'CRITICAL' : 'NORMAL'),
+        timestamp: this.currentState.lastPacketTime,
+      };
+
+      this.processRawPayload(payload);
+    } catch (err) {
+      console.warn('ThingSpeak polling error:', err);
+      if (this.currentMode === 'THINGSPEAK') {
+        this.currentState.connectionStatus = 'DISCONNECTED';
+        this.notify();
+      }
+    }
+  }
+
+  // --- WebSocket Management ---
 
   private connectHardwareWebSocket() {
     this.disconnectHardwareWebSocket();
@@ -304,7 +407,7 @@ export class TelemetryProvider {
       this.ws = new WebSocket(this.config.hardwareWsUrl);
 
       this.ws.onopen = () => {
-        if (this.isHardwareMode) {
+        if (this.currentMode === 'HARDWARE') {
           this.currentState.connectionStatus = 'CONNECTED';
           this.notify();
           alarmManager.addEvent({
@@ -320,10 +423,9 @@ export class TelemetryProvider {
       };
 
       this.ws.onmessage = (event) => {
-        if (!this.isHardwareMode) return;
+        if (this.currentMode !== 'HARDWARE') return;
         try {
           const parsed = JSON.parse(event.data);
-          // Validate basic structure
           if (
             typeof parsed.distance_cm === 'number' &&
             typeof parsed.gas_adc === 'number'
@@ -336,7 +438,7 @@ export class TelemetryProvider {
       };
 
       this.ws.onclose = () => {
-        if (this.isHardwareMode) {
+        if (this.currentMode === 'HARDWARE') {
           this.currentState.connectionStatus = 'RECONNECTING';
           this.notify();
           this.scheduleReconnect();
@@ -344,7 +446,7 @@ export class TelemetryProvider {
       };
 
       this.ws.onerror = () => {
-        if (this.isHardwareMode) {
+        if (this.currentMode === 'HARDWARE') {
           this.currentState.connectionStatus = 'DISCONNECTED';
           this.notify();
         }
@@ -359,7 +461,7 @@ export class TelemetryProvider {
   private scheduleReconnect() {
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
     this.reconnectTimer = window.setTimeout(() => {
-      if (this.isHardwareMode) {
+      if (this.currentMode === 'HARDWARE') {
         this.connectHardwareWebSocket();
       }
     }, 4000);

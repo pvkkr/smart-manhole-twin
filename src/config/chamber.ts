@@ -15,4 +15,7 @@ export const DEFAULT_CHAMBER_CONFIG: ChamberConfig = {
   tiltCriticalDeg: 15.0, // Cover displacement / unauthorized tamper
   telemetryIntervalMs: 1000,
   hardwareWsUrl: 'ws://192.168.4.1:81/telemetry', // ESP32 AP default endpoint
+  thingspeakChannelId: '', // ThingSpeak Numeric Channel ID
+  thingspeakReadApiKey: '', // ThingSpeak Read API Key (if private)
+  thingspeakPollIntervalMs: 15000, // 15-second polling interval (ThingSpeak standard)
 };

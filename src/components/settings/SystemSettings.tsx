@@ -78,7 +78,7 @@ export const SystemSettings = ({ config, onUpdateConfig }: SystemSettingsProps) 
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            ESP32 / WebSocket
+            ThingSpeak &amp; WebSocket
           </button>
           <button
             onClick={() => setActiveTab('DOCS')}
@@ -255,45 +255,126 @@ export const SystemSettings = ({ config, onUpdateConfig }: SystemSettingsProps) 
         </form>
       )}
 
-      {/* Tab 2: Hardware / WebSocket Bridge */}
+      {/* Tab 2: Hardware & Cloud Bridge */}
       {activeTab === 'HARDWARE' && (
-        <div className="scada-panel p-5 rounded-xl border border-slate-800 space-y-5 font-mono text-xs">
-          <div className="border-b border-slate-800 pb-3">
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-              <Wifi className="w-4 h-4 text-scada-cyan" />
-              <span>ESP32 Wi-Fi Gateway &amp; WebSocket Link</span>
-            </h3>
-            <p className="text-slate-400 text-[11px] mt-0.5">
-              Configure real hardware connection when deploying physical STM32 + ESP32 gateway
-            </p>
+        <div className="scada-panel p-5 rounded-xl border border-slate-800 space-y-6 font-mono text-xs">
+          {/* ThingSpeak Cloud Section */}
+          <div className="bg-graphite-900/90 border border-scada-cyan/30 rounded-xl p-4 space-y-4">
+            <div className="border-b border-slate-800 pb-2 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Wifi className="w-4 h-4 text-scada-cyan" />
+                  <span>ThingSpeak Cloud Bridge (Recommended for GitHub Pages)</span>
+                </h3>
+                <p className="text-slate-400 text-[11px] mt-0.5">
+                  100% pure HTTPS link. Streams telemetry from NodeMCU directly to your deployed website anywhere in the world!
+                </p>
+              </div>
+              <span className="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-500/50 px-2 py-0.5 rounded font-bold">
+                NO MIXED CONTENT ISSUES
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-slate-300 block mb-1 font-bold">ThingSpeak Channel ID:</label>
+                <input
+                  type="text"
+                  value={formData.thingspeakChannelId || ''}
+                  onChange={(e) => handleChange('thingspeakChannelId', e.target.value)}
+                  className="w-full bg-graphite-950 border border-slate-700 rounded p-2 text-white font-mono focus:border-scada-cyan focus:outline-none"
+                  placeholder="e.g. 2489123"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Found on your ThingSpeak Channel overview page.
+                </span>
+              </div>
+
+              <div>
+                <label className="text-slate-300 block mb-1 font-bold">Read API Key (Optional if Public):</label>
+                <input
+                  type="text"
+                  value={formData.thingspeakReadApiKey || ''}
+                  onChange={(e) => handleChange('thingspeakReadApiKey', e.target.value)}
+                  className="w-full bg-graphite-950 border border-slate-700 rounded p-2 text-white font-mono focus:border-scada-cyan focus:outline-none"
+                  placeholder="e.g. A9B8C7D6E5F4G3H2"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Found under "API Keys" on ThingSpeak. Leave blank if channel is public.
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  onUpdateConfig(formData);
+                  telemetryProvider.updateConfig(formData);
+                  telemetryProvider.setMode('THINGSPEAK');
+                  setSaveSuccess(true);
+                  setTimeout(() => setSaveSuccess(false), 3000);
+                }}
+                className="px-4 py-2 bg-scada-cyan/20 hover:bg-scada-cyan/30 text-scada-cyan border border-scada-cyan/50 rounded-lg font-bold flex items-center gap-2 transition-colors shadow-lg shadow-cyan-950/40"
+              >
+                <Wifi className="w-4 h-4" />
+                <span>Save &amp; Switch to ThingSpeak Cloud</span>
+              </button>
+            </div>
+
+            <div className="bg-graphite-950 p-3 rounded-lg border border-slate-800 text-[11px] text-slate-400 space-y-1">
+              <span className="font-bold text-slate-200">ThingSpeak Field Mapping:</span>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1 text-[10px]">
+                <div>• Field 1: Distance (cm)</div>
+                <div>• Field 2: Gas (Raw ADC)</div>
+                <div>• Field 3: Temp (°C)</div>
+                <div>• Field 4: Tilt Angle (deg)</div>
+                <div>• Field 5: Cover Open (0/1)</div>
+                <div>• Field 6: System Status</div>
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-4">
+          {/* Local WebSocket Section */}
+          <div className="bg-graphite-900/60 border border-slate-800 rounded-xl p-4 space-y-4">
+            <div className="border-b border-slate-800 pb-2">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-scada-blue" />
+                <span>Local Direct WebSocket Link (LAN / SoftAP)</span>
+              </h3>
+              <p className="text-slate-400 text-[11px] mt-0.5">
+                Low-latency ~100ms connection via NodeMCU Wi-Fi access point or local network
+              </p>
+            </div>
+
             <div>
               <label className="text-slate-300 block mb-1 font-bold">Telemetry WebSocket Endpoint URL:</label>
               <input
                 type="text"
                 value={formData.hardwareWsUrl}
                 onChange={(e) => handleChange('hardwareWsUrl', e.target.value)}
-                className="w-full bg-graphite-900 border border-slate-700 rounded p-2 text-white font-mono focus:border-scada-cyan focus:outline-none"
+                className="w-full bg-graphite-950 border border-slate-700 rounded p-2 text-white font-mono focus:border-scada-cyan focus:outline-none"
                 placeholder="ws://192.168.4.1:81/telemetry"
               />
               <span className="text-[10px] text-slate-500 mt-1 block">
-                Standard format: ws://[ESP32_IP]:[PORT]/[ROUTE]. Default SoftAP IP is 192.168.4.1:81.
+                Standard format: ws://[NODEMCU_IP]:[PORT]/[ROUTE]. Default SoftAP is ws://192.168.4.1:81/telemetry.
               </span>
             </div>
 
-            <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center gap-3 pt-1">
               <button
                 type="button"
                 onClick={() => {
+                  onUpdateConfig(formData);
                   telemetryProvider.updateConfig(formData);
                   telemetryProvider.setMode('HARDWARE');
+                  setSaveSuccess(true);
+                  setTimeout(() => setSaveSuccess(false), 3000);
                 }}
                 className="px-4 py-2 bg-scada-blue/20 hover:bg-scada-blue/30 text-scada-blue border border-scada-blue/50 rounded-lg font-bold flex items-center gap-2 transition-colors"
               >
                 <Cpu className="w-4 h-4" />
-                <span>Switch to Live Hardware Mode</span>
+                <span>Save &amp; Switch to Direct WebSocket</span>
               </button>
 
               <button
@@ -305,19 +386,6 @@ export const SystemSettings = ({ config, onUpdateConfig }: SystemSettingsProps) 
               >
                 <span>Switch to Simulation Mode</span>
               </button>
-            </div>
-
-            <div className="bg-graphite-950 p-4 rounded-lg border border-slate-800 space-y-2 text-slate-300 text-[11px]">
-              <div className="text-scada-cyan font-bold flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Security &amp; Hardware Integrity Guarantee</span>
-              </div>
-              <p>
-                1. No hardcoded Wi-Fi SSIDs or access credentials exist in client source code. ESP32 credentials should be loaded via serial captive portal or NVS flash.
-              </p>
-              <p>
-                2. If the physical ESP32 is offline, the interface clearly shows <strong>DISCONNECTED</strong> or <strong>RECONNECTING</strong>. It never falsely claims to receive live data.
-              </p>
             </div>
           </div>
         </div>

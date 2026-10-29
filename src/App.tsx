@@ -133,13 +133,17 @@ export function App() {
               <Radio className="w-3.5 h-3.5 text-scada-blue" />
               <span className="text-[11px] text-slate-400">Mode:</span>
               <button
-                onClick={() =>
-                  telemetryProvider.setMode(
-                    telemetry.telemetrySource === 'SIMULATION' ? 'HARDWARE' : 'SIMULATION'
-                  )
-                }
+                onClick={() => {
+                  const nextMode =
+                    telemetry.telemetrySource === 'SIMULATION'
+                      ? 'THINGSPEAK'
+                      : telemetry.telemetrySource === 'THINGSPEAK'
+                      ? 'HARDWARE'
+                      : 'SIMULATION';
+                  telemetryProvider.setMode(nextMode);
+                }}
                 className="font-bold text-white hover:text-scada-cyan transition-colors"
-                title="Click to toggle between Simulation and Physical Hardware WebSocket bridge"
+                title="Click to cycle between Simulation, ThingSpeak Cloud, and Local Hardware WebSocket"
               >
                 {telemetry.telemetrySource}
               </button>

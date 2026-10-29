@@ -59,7 +59,7 @@ export interface TelemetryState {
   activeAlarmsCount: number;
   
   // Connection details
-  telemetrySource: 'SIMULATION' | 'HARDWARE';
+  telemetrySource: 'SIMULATION' | 'HARDWARE' | 'THINGSPEAK';
   connectionStatus: 'CONNECTED' | 'RECONNECTING' | 'DISCONNECTED' | 'SIMULATED';
   lastPacketTime: number;
 }
@@ -79,6 +79,9 @@ export interface ChamberConfig {
   tiltCriticalDeg: number; // default 15°
   telemetryIntervalMs: number; // default 1000ms
   hardwareWsUrl: string; // default ws://192.168.4.1:81 or similar
+  thingspeakChannelId: string; // ThingSpeak Numeric Channel ID
+  thingspeakReadApiKey: string; // Optional if public channel
+  thingspeakPollIntervalMs: number; // e.g. 15000 (15 seconds)
 }
 
 export interface HistoricalTelemetryPoint {
