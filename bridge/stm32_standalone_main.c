@@ -243,42 +243,75 @@ static uint8_t I2C_ReadByte(uint8_t ack) {
 
 // --- MPU6050 Driver (Auto-detects 0x68 and 0x69) ---
 static uint8_t mpu_addr = 0x68;
+static uint8_t mpu_detected = 0;
+
+static uint8_t MPU6050_Probe_Address(uint8_t addr) {
+    I2C_Start();
+    uint8_t ack = I2C_WriteByte(addr << 1);
+    I2C_Stop();
+    delay_ms(1);
+    return ack;
+}
 
 static uint8_t MPU6050_Init_Direct(void) {
-    // Try 0x68 first (standard AD0 to GND)
-    mpu_addr = 0x68;
-    I2C_Start();
-    if (I2C_WriteByte(mpu_addr << 1)) {
-        I2C_WriteByte(0x6B); // PWR_MGMT_1
-        I2C_WriteByte(0x00); // Wake up MPU6050
-        I2C_Stop();
-        return 1;
+    // 1. Probe 0x68 (AD0 connected to GND)
+    if (MPU6050_Probe_Address(0x68)) {
+        mpu_addr = 0x68;
+    } 
+    // 2. Probe 0x69 (AD0 pulled HIGH or floating)
+    else if (MPU6050_Probe_Address(0x69)) {
+        mpu_addr = 0x69;
+    } 
+    else {
+        mpu_detected = 0;
+        return 0; // Device not found on I2C bus
     }
-    I2C_Stop();
 
-    // If 0x68 didn't respond, try 0x69 (AD0 pulled HIGH)
-    mpu_addr = 0x69;
+    // Wake up MPU6050: Write 0x00 to PWR_MGMT_1 (0x6B)
     I2C_Start();
-    if (I2C_WriteByte(mpu_addr << 1)) {
-        I2C_WriteByte(0x6B); // PWR_MGMT_1
-        I2C_WriteByte(0x00); // Wake up MPU6050
-        I2C_Stop();
-        return 1;
-    }
+    if (!I2C_WriteByte(mpu_addr << 1)) { I2C_Stop(); mpu_detected = 0; return 0; }
+    if (!I2C_WriteByte(0x6B))          { I2C_Stop(); mpu_detected = 0; return 0; }
+    if (!I2C_WriteByte(0x00))          { I2C_Stop(); mpu_detected = 0; return 0; }
     I2C_Stop();
+    delay_ms(10);
 
-    mpu_addr = 0x68; // reset to default
-    return 0;
+    // Set Full Scale Range to ±2g: Write 0x00 to ACCEL_CONFIG (0x1C)
+    I2C_Start();
+    if (!I2C_WriteByte(mpu_addr << 1)) { I2C_Stop(); mpu_detected = 0; return 0; }
+    if (!I2C_WriteByte(0x1C))          { I2C_Stop(); mpu_detected = 0; return 0; }
+    if (!I2C_WriteByte(0x00))          { I2C_Stop(); mpu_detected = 0; return 0; }
+    I2C_Stop();
+    delay_ms(5);
+
+    mpu_detected = 1;
+    return 1;
 }
 
 static void MPU6050_Read_Direct(int16_t *ax, int16_t *ay, int16_t *az, uint8_t *valid) {
+    if (!mpu_detected) {
+        if (!MPU6050_Init_Direct()) {
+            *valid = 0;
+            return;
+        }
+    }
+
+    // Phase 1: Set register address to 0x3B (ACCEL_XOUT_H)
     I2C_Start();
     if (!I2C_WriteByte(mpu_addr << 1)) { 
         I2C_Stop(); 
         *valid = 0; 
+        mpu_detected = 0; // Lost communication, force re-probe
         return; 
     }
-    I2C_WriteByte(0x3B); // ACCEL_XOUT_H
+    if (!I2C_WriteByte(0x3B)) {
+        I2C_Stop();
+        *valid = 0;
+        return;
+    }
+    I2C_Stop(); // Clean full STOP condition
+    delay_us(10); // Allow lines to settle
+
+    // Phase 2: Read 6 consecutive registers starting from 0x3B
     I2C_Start();
     if (!I2C_WriteByte((mpu_addr << 1) | 1)) { 
         I2C_Stop(); 
@@ -286,11 +319,11 @@ static void MPU6050_Read_Direct(int16_t *ax, int16_t *ay, int16_t *az, uint8_t *
         return; 
     }
 
-    uint8_t xh = I2C_ReadByte(1);
-    uint8_t xl = I2C_ReadByte(1);
-    uint8_t yh = I2C_ReadByte(1);
-    uint8_t yl = I2C_ReadByte(1);
-    uint8_t zh = I2C_ReadByte(1);
+    uint8_t xh = I2C_ReadByte(1); // ACK
+    uint8_t xl = I2C_ReadByte(1); // ACK
+    uint8_t yh = I2C_ReadByte(1); // ACK
+    uint8_t yl = I2C_ReadByte(1); // ACK
+    uint8_t zh = I2C_ReadByte(1); // ACK
     uint8_t zl = I2C_ReadByte(0); // NACK on last byte
     I2C_Stop();
 
@@ -404,10 +437,18 @@ int main(void)
     MPU6050_Init_Direct();
     LCD_Init_Direct();
 
+    char tx_buffer[350];
+    char lcd_buf[17];
+
     LCD_Cmd(0x80);
     LCD_Print("SMART MANHOLE");
     LCD_Cmd(0xC0);
-    LCD_Print("SELF-CONFIG OK");
+    if (mpu_detected) {
+        snprintf(lcd_buf, sizeof(lcd_buf), "MPU OK (0x%02X)   ", mpu_addr);
+        LCD_Print(lcd_buf);
+    } else {
+        LCD_Print("NO MPU SENSOR!  ");
+    }
     delay_ms(1500);
     LCD_Cmd(0x01);
 
@@ -417,9 +458,6 @@ int main(void)
     uint8_t current_temp_valid = 1;
     uint32_t temp_timer = 0;
     uint8_t lcd_counter = 0;
-
-    char tx_buffer[350];
-    char lcd_buf[17];
 
     while (1)
     {
@@ -501,8 +539,13 @@ int main(void)
             LCD_Print(lcd_buf);
 
             LCD_Cmd(0xC0);
-            const char *cover_tag = cover_open ? (tilt_deg > 15.0f ? "TILTED" : "OPEN! ") : "SEALED";
-            snprintf(lcd_buf, sizeof(lcd_buf), "T:%2d.%1dC  %-6s", temp_int, temp_dec, cover_tag);
+            if (accel_valid) {
+                // Live Tilt Angle in degrees: e.g. "T:28.2C TLT: 0d " or "T:28.2C TLT:25d!"
+                char alert = cover_open ? '!' : ' ';
+                snprintf(lcd_buf, sizeof(lcd_buf), "T:%2d.%1dC TLT:%2dd%c", temp_int, temp_dec, tilt_int, alert);
+            } else {
+                snprintf(lcd_buf, sizeof(lcd_buf), "T:%2d.%1dC  NO-MPU ", temp_int, temp_dec);
+            }
             LCD_Print(lcd_buf);
         }
 
