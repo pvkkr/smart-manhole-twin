@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Manhole Hardware Connections Manual - Group P077</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 12mm 15mm;
+    }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page-break { page-break-after: always; }
+      .no-break { page-break-inside: avoid; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #ffffff;
+      color: #0f172a;
+      line-height: 1.5;
+      font-size: 11pt;
+    }
+    .header {
+      border-bottom: 3px solid #0284c7;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .header-left h1 {
+      font-size: 18pt;
+      font-weight: 800;
+      color: #0369a1;
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+      margin-bottom: 2px;
+    }
+    .header-left h2 {
+      font-size: 11pt;
+      font-weight: 600;
+      color: #475569;
+    }
+    .badge-group {
+      background: #0284c7;
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 11pt;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-top: 4px;
+    }
+    .team-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .team-table th, .team-table td {
+      padding: 6px 12px;
+      text-align: left;
+      font-size: 9.5pt;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .team-table th {
+      background: #e2e8f0;
+      color: #334155;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 8.5pt;
+    }
+    .team-id {
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 700;
+      color: #0369a1;
+    }
+    .section-title {
+      font-size: 12.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      border-left: 4px solid #0284c7;
+      padding-left: 8px;
+      margin: 16px 0 8px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .conn-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 14px;
+      font-size: 9.5pt;
+    }
+    .conn-table th, .conn-table td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 8px;
+      text-align: left;
+    }
+    .conn-table th {
+      background: #0f172a;
+      color: #f8fafc;
+      font-weight: 600;
+      font-size: 9pt;
+      text-transform: uppercase;
+    }
+    .conn-table tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    .pin {
+      font-family: "Courier New", monospace;
+      font-weight: bold;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid #bae6fd;
+      display: inline-block;
+    }
+    .power-5v {
+      background: #fee2e2;
+      color: #991b1b;
+      font-weight: bold;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid #fecaca;
+    }
+    .power-3v3 {
+      background: #fef3c7;
+      color: #92400e;
+      font-weight: bold;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid #fde68a;
+    }
+    .gnd {
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: bold;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid #cbd5e1;
+    }
+    .note-box {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 8px 12px;
+      margin: 10px 0;
+      font-size: 9pt;
+      border-radius: 0 6px 6px 0;
+    }
+    .warning-box {
+      background: #fef2f2;
+      border-left: 4px solid #ef4444;
+      padding: 8px 12px;
+      margin: 10px 0;
+      font-size: 9pt;
+      border-radius: 0 6px 6px 0;
+      color: #991b1b;
+    }
+    .diagram-container {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 12px 0;
+      text-align: center;
+    }
+    .footer {
+      margin-top: 18px;
+      border-top: 1px solid #cbd5e1;
+      padding-top: 8px;
+      font-size: 8pt;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Smart Manhole Utilities Urban IoT</h1>
+      <h2>Complete Hardware Pin Connection & Wiring Specification Manual</h2>
+    </div>
+    <div style="text-align: right;">
+      <span class="badge-group">Project Group: P077</span>
+      <div style="font-size: 8.5pt; color: #64748b; margin-top: 4px;">System Release v2.4 (SCADA Twin)</div>
+    </div>
+  </div>
+
+  <!-- TEAM DETAILS -->
+  <table class="team-table">
+    <thead>
+      <tr>
+        <th style="width: 25%;">Student ID</th>
+        <th style="width: 45%;">Team Member Name</th>
+        <th style="width: 30%;">Project Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="team-id">2400040006</td>
+        <td><strong>P V Kishor Kumar Reddy</strong></td>
+        <td>Lead Firmware & SCADA 3D Twin Architecture</td>
+      </tr>
+      <tr>
+        <td class="team-id">2400040004</td>
+        <td><strong>T Perumal</strong></td>
+        <td>Embedded Sensors & Signal Conditioning</td>
+      </tr>
+      <tr>
+        <td class="team-id">2400040303</td>
+        <td><strong>Chundu Uday Sai</strong></td>
+        <td>IoT Cloud Gateway & Wireless Integration</td>
+      </tr>
+      <tr>
+        <td class="team-id">2400040339</td>
+        <td><strong>Ayan Chowdhury</strong></td>
+        <td>Hardware Prototyping & Power Testing</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 1: SYSTEM OVERVIEW -->
+  <div class="section-title">1. Master System Hardware Architecture</div>
+  <p style="font-size: 9.5pt; margin-bottom: 8px;">
+    The system utilizes a <strong>Dual-Core Distributed Architecture</strong>: an ultra-reliable <strong>STM32F103C8T6 (ARM Cortex-M3 @ 72MHz)</strong> acts as the bare-metal deterministic sensor controller sampling at 10Hz, linked over full-duplex UART to an <strong>ESP8266 NodeMCU V3</strong> Wi-Fi gateway that transmits telemetry simultaneously to ThingSpeak Cloud and local real-time WebSockets.
+  </p>
+
+  <div class="diagram-container">
+    <svg width="680" height="150" viewBox="0 0 680 150" xmlns="http://www.w3.org/2000/svg" style="font-family: monospace; font-size: 11px;">
+      <!-- Sensor Block -->
+      <rect x="10" y="15" width="160" height="120" rx="6" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+      <text x="90" y="35" text-anchor="middle" font-weight="bold" fill="#0f172a">SENSOR CLUSTER</text>
+      <text x="20" y="55" fill="#334155">• HC-SR04 (Distance)</text>
+      <text x="20" y="72" fill="#334155">• MQ-2 (Toxic Gas)</text>
+      <text x="20" y="89" fill="#334155">• MPU-6050 (Tilt 6DOF)</text>
+      <text x="20" y="106" fill="#334155">• DS18B20 (Temp 1-Wire)</text>
+      <text x="20" y="123" fill="#334155">• Reed Switch (Tamper)</text>
+
+      <!-- Arrow 1 -->
+      <line x1="170" y1="75" x2="225" y2="75" stroke="#0284c7" stroke-width="3" marker-end="url(#arrow)"/>
+      <text x="198" y="68" text-anchor="middle" font-size="9" fill="#0284c7" font-weight="bold">GPIO/ADC/I2C</text>
+
+      <!-- STM32 Block -->
+      <rect x="230" y="15" width="180" height="120" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+      <text x="320" y="35" text-anchor="middle" font-weight="bold" fill="#0369a1">STM32F103 BLUE PILL</text>
+      <text x="240" y="55" fill="#0369a1">• ARM Cortex-M3 72MHz</text>
+      <text x="240" y="72" fill="#0369a1">• 10Hz Non-blocking Loop</text>
+      <text x="240" y="89" fill="#0369a1">• I2C LCD Driver (16x2)</text>
+      <text x="240" y="106" fill="#0369a1">• USART1 JSON Stream</text>
+      <text x="240" y="123" fill="#0369a1">• Hardware DWT Timing</text>
+
+      <!-- Arrow 2 -->
+      <line x1="410" y1="75" x2="475" y2="75" stroke="#0284c7" stroke-width="3"/>
+      <text x="442" y="68" text-anchor="middle" font-size="9" fill="#0284c7" font-weight="bold">PA9 (TX) 115200</text>
+
+      <!-- NodeMCU Block -->
+      <rect x="480" y="15" width="190" height="120" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+      <text x="575" y="35" text-anchor="middle" font-weight="bold" fill="#92400e">NODEMCU V3 GATEWAY</text>
+      <text x="490" y="55" fill="#92400e">• D7 (GPIO13 RX)</text>
+      <text x="490" y="72" fill="#92400e">• Wi-Fi Station 802.11b/g/n</text>
+      <text x="490" y="89" fill="#92400e">• ThingSpeak REST Cloud</text>
+      <text x="490" y="106" fill="#92400e">• Local /telemetry REST</text>
+      <text x="490" y="123" fill="#92400e">• 3D Digital Twin Link</text>
+    </svg>
+  </div>
+
+  <!-- SECTION 2: PIN CONNECTIONS TABLE -->
+  <div class="section-title">2. Complete Pin-by-Pin Wiring Interconnect Table</div>
+
+  <table class="conn-table no-break">
+    <thead>
+      <tr>
+        <th style="width: 20%;">Sensor / Module</th>
+        <th style="width: 15%;">Module Pin</th>
+        <th style="width: 25%;">Target Microcontroller Pin</th>
+        <th style="width: 15%;">Signal Type</th>
+        <th style="width: 25%;">Essential Wiring Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- HC-SR04 -->
+      <tr>
+        <td rowspan="4"><strong>HC-SR04 Ultrasonic</strong><br><span style="font-size: 8pt; color: #64748b;">Distance & Water Depth</span></td>
+        <td>VCC</td>
+        <td><span class="power-5v">5V Pin</span> (Blue Pill / NodeMCU Vin)</td>
+        <td>Power</td>
+        <td>Transducers MUST have 5V to fire reliably.</td>
+      </tr>
+      <tr>
+        <td>GND</td>
+        <td><span class="gnd">GND</span></td>
+        <td>Ground</td>
+        <td>Common ground rail.</td>
+      </tr>
+      <tr>
+        <td>Trig</td>
+        <td><span class="pin">PA1</span></td>
+        <td>Digital Output</td>
+        <td>10µs trigger pulse generated by STM32.</td>
+      </tr>
+      <tr>
+        <td>Echo</td>
+        <td><span class="pin">PA2</span> <span style="font-size: 8pt; color: #b91c1c;">(via Divider!)</span></td>
+        <td>Digital Input</td>
+        <td><strong>1kΩ / 2kΩ Divider required!</strong> Echo is 5V, PA2 is 3.3V max!</td>
+      </tr>
+
+      <!-- MQ-2 -->
+      <tr>
+        <td rowspan="3"><strong>MQ-2 Gas Sensor</strong><br><span style="font-size: 8pt; color: #64748b;">Methane, Smoke, LPG</span></td>
+        <td>VCC</td>
+        <td><span class="power-5v">5V Pin</span></td>
+        <td>Power</td>
+        <td>Internal heater requires 5V 150mA.</td>
+      </tr>
+      <tr>
+        <td>GND</td>
+        <td><span class="gnd">GND</span></td>
+        <td>Ground</td>
+        <td>Common ground.</td>
+      </tr>
+      <tr>
+        <td>A0 (Analog Out)</td>
+        <td><span class="pin">PA0</span> (ADC1_IN0)</td>
+        <td>Analog Input</td>
+        <td>Read via 12-bit ADC (0 - 4095). Normal: 400-800.</td>
+      </tr>
+
+      <!-- MPU-6050 -->
+      <tr>
+        <td rowspan="5"><strong>MPU-6050 IMU</strong><br><span style="font-size: 8pt; color: #64748b;">3-Axis Tilt & Displacement</span></td>
+        <td>VCC</td>
+        <td><span class="power-3v3">3.3V Pin</span> or <span class="power-5v">5V</span></td>
+        <td>Power</td>
+        <td>GY-521 board has onboard 3.3V LDO regulator.</td>
+      </tr>
+      <tr>
+        <td>GND</td>
+        <td><span class="gnd">GND</span></td>
+        <td>Ground</td>
+        <td>Common ground.</td>
+      </tr>
+      <tr>
+        <td>SCL</td>
+        <td><span class="pin">PB8</span></td>
+        <td>I2C Clock</td>
+        <td>Shared I2C bus with 16x2 LCD.</td>
+      </tr>
+      <tr>
+        <td>SDA</td>
+        <td><span class="pin">PB9</span></td>
+        <td>I2C Data</td>
+        <td>Shared I2C bus with 16x2 LCD.</td>
+      </tr>
+      <tr>
+        <td>AD0</td>
+        <td><span class="gnd">GND</span></td>
+        <td>Address Select</td>
+        <td>Tie to GND to fix address to <strong>0x68</strong>.</td>
+      </tr>
+
+      <!-- 16x2 I2C LCD -->
+      <tr>
+        <td rowspan="4"><strong>16x2 I2C LCD</strong><br><span style="font-size: 8pt; color: #64748b;">PCF8574 Backpack</span></td>
+        <td>VCC</td>
+        <td><span class="power-5v">5V Pin</span></td>
+        <td>Power</td>
+        <td>5V provides optimal contrast and LED backlight.</td>
+      </tr>
+      <tr>
+        <td>GND</td>
+        <td><span class="gnd">GND</span></td>
+        <td>Ground</td>
+        <td>Common ground.</td>
+      </tr>
+      <tr>
+        <td>SCL</td>
+        <td><span class="pin">PB8</span></td>
+        <td>I2C Clock</td>
+        <td>Connect to PB8 along with MPU6050 SCL.</td>
+      </tr>
+      <tr>
+        <td>SDA</td>
+        <td><span class="pin">PB9</span></td>
+        <td>I2C Data</td>
+        <td>Connect to PB9 along with MPU6050 SDA.</td>
+      </tr>
+
+      <!-- DS18B20 -->
+      <tr>
+        <td rowspan="3"><strong>DS18B20 Temp Sensor</strong><br><span style="font-size: 8pt; color: #64748b;">Waterproof Probe</span></td>
+        <td>VCC (Red wire)</td>
+        <td><span class="power-3v3">3.3V Pin</span></td>
+        <td>Power</td>
+        <td>Operates reliably from 3.0V to 5.0V.</td>
+      </tr>
+      <tr>
+        <td>GND (Black wire)</td>
+        <td><span class="gnd">GND</span></td>
+        <td>Ground</td>
+        <td>Common ground.</td>
+      </tr>
+      <tr>
+        <td>Data (Yellow wire)</td>
+        <td><span class="pin">PB12</span></td>
+        <td>1-Wire Bi-dir</td>
+        <td><strong>Must have 4.7kΩ pull-up resistor</strong> between Data and 3.3V!</td>
+      </tr>
+
+      <!-- Reed Switch -->
+      <tr>
+        <td rowspan="2"><strong>Magnetic Reed Switch</strong><br><span style="font-size: 8pt; color: #64748b;">Lid Open / Anti-theft</span></td>
+        <td>Terminal 1</td>
+        <td><span class="pin">PB13</span></td>
+        <td>Digital Input</td>
+        <td>Configured as <code>INPUT_PULLUP</code> in STM32 hardware.</td>
+      </tr>
+      <tr>
+        <td>Terminal 2</td>
+        <td><span class="gnd">GND</span></td>
+        <td>Ground</td>
+        <td>When magnet is attached: PB13=0 (SEAL). Removed: PB13=1 (OPEN).</td>
+      </tr>
+
+      <!-- Buzzer -->
+      <tr>
+        <td rowspan="2"><strong>Active 5V Buzzer</strong><br><span style="font-size: 8pt; color: #64748b;">Audible Alarm</span></td>
+        <td>Positive (+)</td>
+        <td><span class="pin">PB0</span></td>
+        <td>Digital Output</td>
+        <td>GPIO PB0 drives HIGH when gas > 2200 ADC or cover OPEN.</td>
+      </tr>
+      <tr>
+        <td>Negative (-)</td>
+        <td><span class="gnd">GND</span></td>
+        <td>Ground</td>
+        <td>Common ground.</td>
+      </tr>
+
+      <!-- UART Interconnect -->
+      <tr style="background: #e0f2fe;">
+        <td rowspan="2"><strong>STM32 to NodeMCU Gateway</strong><br><span style="font-size: 8pt; color: #0369a1;">Serial Telemetry Bus</span></td>
+        <td>PA9 (USART1 TX)</td>
+        <td><span class="pin">Pin D7</span> (GPIO13 RX on NodeMCU)</td>
+        <td>UART 115200 Baud</td>
+        <td>STM32 streams JSON telemetry frames every 100ms.</td>
+      </tr>
+      <tr style="background: #e0f2fe;">
+        <td>GND (STM32)</td>
+        <td><span class="gnd">GND</span> (NodeMCU)</td>
+        <td>Ground Reference</td>
+        <td><strong>CRITICAL: Common GND is mandatory for serial logic!</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- PAGE BREAK FOR CLEAN PRINTING -->
+  <div class="page-break"></div>
+
+  <!-- SECTION 3: VOLTAGE DIVIDER SCHEMATIC -->
+  <div class="section-title">3. Critical HC-SR04 Echo Level Shifter Circuit</div>
+  <p style="font-size: 9.5pt;">
+    The HC-SR04 Echo pin outputs 5V TTL logic. STM32 pin <strong>PA2 is an ADC input pin and is NOT 5V tolerant (maximum voltage 3.6V)</strong>. Connecting Echo directly to PA2 will damage the STM32 microcontroller. The 1kΩ / 2kΩ resistive voltage divider safely steps down the 5.0V echo pulse to 3.33V:
+  </p>
+
+  <div class="diagram-container">
+    <svg width="600" height="110" viewBox="0 0 600 110" xmlns="http://www.w3.org/2000/svg" style="font-family: monospace; font-size: 11px;">
+      <!-- Echo In -->
+      <text x="20" y="55" font-weight="bold" fill="#0f172a">HC-SR04 ECHO (5V Out)</text>
+      <line x1="170" y1="50" x2="230" y2="50" stroke="#0f172a" stroke-width="2"/>
+      
+      <!-- Resistor 1 -->
+      <rect x="230" y="42" width="60" height="16" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+      <text x="260" y="54" text-anchor="middle" font-size="9" font-weight="bold" fill="#92400e">R1 = 1 kΩ</text>
+
+      <!-- Mid Point -->
+      <circle cx="330" cy="50" r="4" fill="#0284c7"/>
+      <line x1="290" y1="50" x2="330" y2="50" stroke="#0f172a" stroke-width="2"/>
+      <line x1="330" y1="50" x2="420" y2="50" stroke="#0284c7" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+      <!-- Output to PA2 -->
+      <text x="430" y="54" font-weight="bold" fill="#0369a1">PA2 (STM32 Input: 3.33V SAFE)</text>
+
+      <!-- Drop to Resistor 2 -->
+      <line x1="330" y1="50" x2="330" y2="70" stroke="#0f172a" stroke-width="2"/>
+      <rect x="315" y="70" width="30" height="24" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+      <text x="330" y="86" text-anchor="middle" font-size="8" font-weight="bold" fill="#92400e">2 kΩ</text>
+      <line x1="330" y1="94" x2="330" y2="105" stroke="#0f172a" stroke-width="2"/>
+      <line x1="320" y1="105" x2="340" y2="105" stroke="#334155" stroke-width="2"/>
+      <line x1="324" y1="108" x2="336" y2="108" stroke="#334155" stroke-width="1.5"/>
+      <line x1="327" y1="110" x2="333" y2="110" stroke="#334155" stroke-width="1"/>
+      <text x="350" y="106" font-size="9" fill="#64748b">GND</text>
+    </svg>
+    <div style="font-size: 8.5pt; color: #475569; margin-top: 4px;">
+      Formula: \( V_{\text{out}} = V_{\text{in}} \times \frac{R_2}{R_1 + R_2} = 5.0\text{V} \times \frac{2000}{1000 + 2000} = 3.333\text{V} \)
+    </div>
+  </div>
+
+  <!-- SECTION 4: 16x2 LCD SIMULTANEOUS READOUT GUIDE -->
+  <div class="section-title">4. Physical 16x2 Character LCD Live Screen Layout</div>
+  <p style="font-size: 9.5pt;">
+    All 5 telemetry parameters are rendered simultaneously in real time without flickering or screen switching:
+  </p>
+
+  <div style="background: #0284c7; border: 4px solid #0369a1; border-radius: 8px; padding: 12px; margin: 10px auto; width: 360px; font-family: 'Courier New', monospace; font-size: 14pt; color: #ffffff; text-shadow: 0 0 5px #bae6fd; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+    <div style="background: #075985; padding: 6px 10px; border-radius: 4px; margin-bottom: 4px; letter-spacing: 2px;">
+      D: 25cm   G:790
+    </div>
+    <div style="background: #075985; padding: 6px 10px; border-radius: 4px; letter-spacing: 2px;">
+      T:28C TL: 0 SEAL
+    </div>
+  </div>
+
+  <table class="conn-table" style="margin-top: 10px;">
+    <thead>
+      <tr>
+        <th>LCD Tag</th>
+        <th>Measured Parameter</th>
+        <th>Normal Range</th>
+        <th>Alarm / Critical Condition</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>D: [X]cm</strong></td>
+        <td>Ultrasonic Air Distance to Water</td>
+        <td>50cm down to 10cm</td>
+        <td>Distance &lt; 5cm (Flash Flood Risk / Surcharge)</td>
+      </tr>
+      <tr>
+        <td><strong>G: [X]</strong></td>
+        <td>MQ-2 Raw Gas ADC</td>
+        <td>400 – 900 ADC</td>
+        <td>Gas &gt; 2200 ADC (Explosive Methane/VOC Hazard)</td>
+      </tr>
+      <tr>
+        <td><strong>T: [X]C</strong></td>
+        <td>DS18B20 Sub-surface Temp</td>
+        <td>20°C – 35°C</td>
+        <td>Temp &gt; 60°C (Underground Cable Fire Hazard)</td>
+      </tr>
+      <tr>
+        <td><strong>TL: [X]</strong></td>
+        <td>MPU-6050 Live Tilt Angle</td>
+        <td>0° – 4° (Flat on street)</td>
+        <td>Tilt &gt; 15° (Cover Displaced / Traffic Hazard)</td>
+      </tr>
+      <tr>
+        <td><strong>SEAL / OPEN</strong></td>
+        <td>Magnetic Reed Cover State</td>
+        <td>SEAL (Lid firmly seated)</td>
+        <td>OPEN (Unauthorized entry or physical displacement)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 5: DEBUGGING & VERIFICATION -->
+  <div class="section-title">5. Step-by-Step Hardware Checkout & Debugging Protocol</div>
+  <ol style="font-size: 9pt; padding-left: 20px; line-height: 1.6;">
+    <li><strong>Common Ground Verification</strong>: Ensure STM32 GND, NodeMCU GND, and all sensor grounds meet at a unified ground bus. Without common GND, UART packets and I2C will drop bits.</li>
+    <li><strong>I2C Bus Address Scan</strong>: On boot, the LCD splash screen displays <code>MPU OK (0x68)</code>. If it shows <code>NO MPU SENSOR!</code>, check if the GY-521 AD0 pin is connected to GND and verify 3.3V power.</li>
+    <li><strong>Serial Gateway Monitoring</strong>: Open Arduino IDE Serial Monitor at <strong>115200 baud</strong> on the NodeMCU port. It will display:
+      <pre style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; margin: 4px 0; font-size: 8pt;">[STM32 Data] Dist: 25.0cm | Gas: 790 | Temp: 28.0C | Tilt: 0.0 deg | Cover: COVER CLOSED
+[ThingSpeak] Success! Entry ID #482 recorded.</pre>
+    </li>
+    <li><strong>Zero-Latency Local Mode</strong>: In your web dashboard at <a href="https://pvkkr.github.io/smart-manhole-twin/" target="_blank">https://pvkkr.github.io/smart-manhole-twin/</a>, enter <code>http://&lt;NodeMCU_IP&gt;/telemetry</code> under Settings $\rightarrow$ Hardware URL to stream telemetry with under 20ms latency!</li>
+  </ol>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span>Smart Manhole Cover Monitoring for Utilities • Group P077</span>
+    <span>Page 2 of 2 • Certified Schematic Reference</span>
+  </div>
+
+</body>
+</html>

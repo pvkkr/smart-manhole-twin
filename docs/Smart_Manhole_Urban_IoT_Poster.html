@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Manhole Utilities Urban IoT - Project Group P077 Poster</title>
+  <style>
+    @page {
+      size: A3 landscape;
+      margin: 8mm;
+    }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #0f172a !important; color: #f8fafc !important; }
+      .no-print { display: none !important; }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #090d16;
+      color: #f1f5f9;
+      line-height: 1.45;
+      padding: 16px;
+      min-width: 1200px;
+    }
+    .poster-container {
+      max-width: 1500px;
+      margin: 0 auto;
+      background: #0f172a;
+      border: 2px solid #0284c7;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 40px rgba(2, 132, 199, 0.2);
+    }
+    /* HEADER BANNER */
+    .banner {
+      border-bottom: 2px solid #1e293b;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .banner-title h1 {
+      font-size: 26pt;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 50%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+      line-height: 1.15;
+    }
+    .banner-title h2 {
+      font-size: 11.5pt;
+      font-weight: 500;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .banner-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+    .group-pill {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 12pt;
+      padding: 6px 16px;
+      border-radius: 999px;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+      letter-spacing: 1px;
+    }
+    /* TEAM STRIP */
+    .team-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+    }
+    .team-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .team-card .id {
+      font-family: monospace;
+      font-weight: 800;
+      font-size: 11pt;
+      color: #38bdf8;
+    }
+    .team-card .name {
+      font-weight: 700;
+      font-size: 10pt;
+      color: #f8fafc;
+    }
+    .team-card .role {
+      font-size: 8pt;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    /* 4-COLUMN GRID */
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .column {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .panel {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      flex: 1;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #1f2937;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+    .panel-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: #0284c7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 10pt;
+      color: #ffffff;
+    }
+    .panel-title {
+      font-size: 10pt;
+      font-weight: 800;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .section-sub {
+      font-size: 8.5pt;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin: 8px 0 4px 0;
+      text-transform: uppercase;
+    }
+    p, ul {
+      font-size: 8.5pt;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    li {
+      margin-bottom: 6px;
+      position: relative;
+      padding-left: 14px;
+    }
+    li::before {
+      content: "•";
+      color: #38bdf8;
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+    .highlight-card {
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin: 6px 0;
+      font-size: 8pt;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      font-weight: 700;
+      margin-right: 4px;
+      font-family: monospace;
+    }
+    .tag-blue { background: #0c4a6e; color: #38bdf8; border: 1px solid #0284c7; }
+    .tag-green { background: #064e3b; color: #34d399; border: 1px solid #059669; }
+    .tag-amber { background: #451a03; color: #fbbf24; border: 1px solid #d97706; }
+    .tag-rose { background: #4c0519; color: #fb7185; border: 1px solid #e11d48; }
+
+    /* CODE PREVIEW */
+    .lcd-preview {
+      background: #0284c7;
+      border: 2px solid #38bdf8;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-family: monospace;
+      font-size: 10pt;
+      color: #ffffff;
+      font-weight: bold;
+      text-shadow: 0 0 4px #bae6fd;
+      letter-spacing: 1px;
+      margin: 6px 0;
+    }
+    /* FOOTER */
+    .footer {
+      border-top: 1px solid #1e293b;
+      padding-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 8pt;
+      color: #64748b;
+    }
+    .footer a {
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="poster-container">
+    <!-- HEADER -->
+    <div class="banner">
+      <div class="banner-title">
+        <h1>Smart Manhole Utilities Urban IoT</h1>
+        <h2>Autonomous Sub-surface Infrastructure Monitoring, IoT Cloud & 3D Digital Twin SCADA</h2>
+      </div>
+      <div class="banner-meta">
+        <span class="group-pill">GROUP P077</span>
+        <span style="font-size: 8.5pt; color: #94a3b8; font-family: monospace;">SCADA Release v2.4 • Fall 2026</span>
+      </div>
+    </div>
+
+    <!-- TEAM DETAILS STRIP -->
+    <div class="team-strip">
+      <div class="team-card">
+        <span class="id">2400040006</span>
+        <span class="name">P V Kishor Kumar Reddy</span>
+        <span class="role">Lead Firmware & 3D Digital Twin</span>
+      </div>
+      <div class="team-card">
+        <span class="id">2400040004</span>
+        <span class="name">T Perumal</span>
+        <span class="role">Sensor Conditioning & Calibration</span>
+      </div>
+      <div class="team-card">
+        <span class="id">2400040303</span>
+        <span class="name">Chundu Uday Sai</span>
+        <span class="role">IoT Gateway & Cloud Integration</span>
+      </div>
+      <div class="team-card">
+        <span class="id">2400040339</span>
+        <span class="name">Ayan Chowdhury</span>
+        <span class="role">Hardware Prototyping & Power</span>
+      </div>
+    </div>
+
+    <!-- 4-COLUMN POSTER CONTENT -->
+    <div class="grid-4">
+
+      <!-- COLUMN 1: OBJECTIVES & URBAN APPLICATIONS -->
+      <div class="column">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-icon">1</div>
+            <div class="panel-title">Objectives & Urban Challenge</div>
+          </div>
+          <p>
+            <strong>The Sub-surface Crisis:</strong> Traditional urban manholes are "black boxes." Siltation causes sudden street flash floods; toxic sewer gas accumulation (Methane, H₂S) asphyxiates sanitation workers; and displaced or stolen lids cause severe vehicular road accidents.
+          </p>
+          <div class="section-sub">Project Objectives</div>
+          <ul>
+            <li><strong>Continuous Edge Sensing:</strong> 24/7 autonomous monitoring of flood depth, gas levels, temperature, and lid displacement.</li>
+            <li><strong>Dual-Mode Real-Time Link:</strong> Sub-20ms direct local SCADA WebSocket + 15s historical cloud telemetry.</li>
+            <li><strong>Interactive 3D Digital Twin:</strong> Physics-accurate visual twin rendering lid kinematics and fluid surcharge.</li>
+            <li><strong>Zero Fatalities / Proactive Alarms:</strong> Instant local buzzer + automated city command center alerts.</li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-icon">★</div>
+            <div class="panel-title">Real-Time Urban Applications</div>
+          </div>
+          <ul>
+            <li><strong>Municipal Flood Defense:</strong> Real-time stormwater depth sensing alerts city drainage teams before street inundation.</li>
+            <li><strong>Sanitation Worker Safety:</strong> Pre-entry gas screening directly prevents lethal toxic gas poisoning.</li>
+            <li><strong>Anti-Theft Cable Protection:</strong> Instant tamper alarms guard underground optical fiber and high-voltage power conduits.</li>
+            <li><strong>Roadway Traffic Safety:</strong> Displaced lid alerts notify police and road authorities in seconds.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- COLUMN 2: HARDWARE ARCHITECTURE -->
+      <div class="column">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-icon">2</div>
+            <div class="panel-title">Dual-Core Hardware Architecture</div>
+          </div>
+          <p>
+            The system employs a <strong>dual-processor distributed architecture</strong> separating deterministic real-time sensing from wireless networking:
+          </p>
+          <ul>
+            <li><strong>STM32F103C8T6 (ARM Cortex-M3 @ 72MHz):</strong> Bare-metal CMSIS firmware cycling an ultra-fast 10Hz non-blocking multi-sensor engine.</li>
+            <li><strong>NodeMCU V3 (ESP8266 Gateway):</strong> Receives STM32 JSON over USART1 (115200 baud). Hosts local REST server & pushes to ThingSpeak.</li>
+          </ul>
+
+          <div class="section-sub">Sensor Interconnect Summary</div>
+          <div class="highlight-card">
+            <span class="tag tag-blue">PA1/PA2</span> <strong>HC-SR04:</strong> 2cm - 400cm Air Gap (via 1k/2k Divider)<br/>
+            <span class="tag tag-amber">PA0</span> <strong>MQ-2:</strong> 12-bit Analog Gas ADC (0 - 4095)<br/>
+            <span class="tag tag-green">PB8/PB9</span> <strong>MPU-6050:</strong> I2C 3-Axis Tilt (0° to 90°)<br/>
+            <span class="tag tag-blue">PB8/PB9</span> <strong>16x2 LCD:</strong> I2C Character Display (0x27)<br/>
+            <span class="tag tag-amber">PB12</span> <strong>DS18B20:</strong> 1-Wire Waterproof Probe (4.7kΩ Pull-up)<br/>
+            <span class="tag tag-rose">PB13</span> <strong>Reed Switch:</strong> Magnetic Lid Seal Input<br/>
+            <span class="tag tag-rose">PB0</span> <strong>Active Buzzer:</strong> Critical Audio Alarm Beacon
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-icon">LCD</div>
+            <div class="panel-title">Physical 16x2 LCD Interface</div>
+          </div>
+          <p>All 5 telemetry variables displayed simultaneously in real time:</p>
+          <div class="lcd-preview">
+            D: 25cm   G:790<br/>
+            T:28C TL: 0 SEAL
+          </div>
+          <p style="font-size: 7.5pt; color: #94a3b8;">
+            Row 1: Distance (D) & Gas (G) | Row 2: Temp (T), Tilt Angle (TL), and Seal / Open status.
+          </p>
+        </div>
+      </div>
+
+      <!-- COLUMN 3: BOTTLENECKS SOLVED -->
+      <div class="column">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-icon">3</div>
+            <div class="panel-title">Engineering Bottlenecks Solved</div>
+          </div>
+          <ul>
+            <li>
+              <strong>GCC nano.specs Float Bug:</strong> ARM GCC nano.specs stripped %f in snprintf, leaving LCD blanks (<code>D:cm</code>, <code>T:C</code>).<br/>
+              <span class="tag tag-green">SOLVED</span> <em>Re-engineered with fixed-point integer formatting (%d.%d).</em>
+            </li>
+            <li>
+              <strong>Bit-Bang I2C Repeated-Start Hang:</strong> MPU6050 ACK held SDA low during repeated starts, forcing tilt to 0°.<br/>
+              <span class="tag tag-green">SOLVED</span> <em>Replaced with clean Stop-Start cycle with 10µs bus settling.</em>
+            </li>
+            <li>
+              <strong>DS18B20 750ms Blocking Freeze:</strong> 12-bit temp conversion stalled MCU execution for almost a second every loop.<br/>
+              <span class="tag tag-green">SOLVED</span> <em>Created an asynchronous non-blocking state machine at 10Hz.</em>
+            </li>
+            <li>
+              <strong>Browser / CDN 300s Stale Cache:</strong> Browsers cached ThingSpeak feeds/last.json for 5 minutes.<br/>
+              <span class="tag tag-green">SOLVED</span> <em>Added dynamic timestamp cache-busters (?_=${Date.now()}) & no-store.</em>
+            </li>
+            <li>
+              <strong>Echo 5V-to-3.3V Logic Protection:</strong> HC-SR04 Echo 5V would destroy non-5V-tolerant ADC pin PA2.<br/>
+              <span class="tag tag-green">SOLVED</span> <em>Integrated precision 1kΩ / 2kΩ voltage divider (3.33V safe).</em>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- COLUMN 4: DIGITAL TWIN & ROADMAP -->
+      <div class="column">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-icon">4</div>
+            <div class="panel-title">3D Digital Twin & Future Work</div>
+          </div>
+          <p>
+            <strong>Interactive SCADA 3D Twin:</strong> Powered by React 18 + Three.js + Vite deployed globally on GitHub Pages:
+          </p>
+          <ul>
+            <li><strong>Kinematic Lid Motion:</strong> Real-time hinge rotation mirrors MPU-6050 accelerometer pitch/roll.</li>
+            <li><strong>Volumetric Fluid Surcharge:</strong> Shader-rendered water level calculates chamber capacity % from HC-SR04.</li>
+            <li><strong>Automated Alarms:</strong> Visual alert banners + audio sirens dispatch when thresholds breach.</li>
+          </ul>
+
+          <div class="section-sub">Future Improvements Roadmap</div>
+          <ul>
+            <li><strong>LoRaWAN & NB-IoT:</strong> Subterranean LPWAN enabling 10km transmission range through heavy iron lids with 5+ year battery life.</li>
+            <li><strong>Piezoelectric Energy Harvesting:</strong> Harnessing kinetic energy from road traffic rolling over manhole covers.</li>
+            <li><strong>Edge TinyML Analytics:</strong> Microcontroller-level predictive algorithms anticipating pipe siltation before blockages occur.</li>
+            <li><strong>Municipal GIS Integration:</strong> City-wide mapping linking thousands of manholes directly into Smart City Command Centers.</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <span><strong>Project:</strong> Smart Manhole Cover Monitoring for Utilities • Group P077</span>
+      <span><strong>ThingSpeak Cloud:</strong> Channel #2489123 (1s Polling)</span>
+      <span><strong>Live Digital Twin:</strong> <a href="https://pvkkr.github.io/smart-manhole-twin/" target="_blank">https://pvkkr.github.io/smart-manhole-twin/</a></span>
+    </div>
+  </div>
+
+</body>
+</html>
