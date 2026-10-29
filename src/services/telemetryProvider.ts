@@ -35,6 +35,7 @@ export class TelemetryProvider {
   private ws: WebSocket | null = null;
   private reconnectTimer: number | null = null;
   private thingspeakTimer: number | null = null;
+  private hardwarePollTimer: number | null = null;
   private currentMode: 'SIMULATION' | 'HARDWARE' | 'THINGSPEAK' = 'SIMULATION';
 
   constructor(initialConfig: ChamberConfig) {
@@ -376,7 +377,7 @@ export class TelemetryProvider {
     // Immediate initial fetch
     this.fetchThingspeakFeed();
 
-    const interval = Math.max(5000, this.config.thingspeakPollIntervalMs || 15000);
+    const interval = Math.max(1000, this.config.thingspeakPollIntervalMs || 1000);
     this.thingspeakTimer = window.setInterval(() => {
       if (this.currentMode === 'THINGSPEAK') {
         this.fetchThingspeakFeed();
@@ -468,12 +469,41 @@ export class TelemetryProvider {
     }
   }
 
-  // --- WebSocket Management ---
+  // --- Hardware Link Management (Direct WebSocket or Ultra-Fast Local HTTP) ---
 
   private connectHardwareWebSocket() {
     this.disconnectHardwareWebSocket();
+    const endpoint = (this.config.hardwareWsUrl || '').trim();
+    if (!endpoint) return;
+
+    // 1. Direct Ultra-Fast Local HTTP Polling (200ms latency, zero library dependencies!)
+    if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+      const pollLocalHttp = async () => {
+        if (this.currentMode !== 'HARDWARE') return;
+        try {
+          const res = await fetch(endpoint, { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            this.currentState.connectionStatus = 'CONNECTED';
+            this.processRawPayload(data, 'HARDWARE');
+          } else {
+            this.currentState.connectionStatus = 'DISCONNECTED';
+            this.notify();
+          }
+        } catch {
+          this.currentState.connectionStatus = 'DISCONNECTED';
+          this.notify();
+        }
+      };
+
+      pollLocalHttp();
+      this.hardwarePollTimer = window.setInterval(pollLocalHttp, 200); // 5 updates per second!
+      return;
+    }
+
+    // 2. Direct RFC-6455 WebSocket Link (10Hz real-time stream)
     try {
-      this.ws = new WebSocket(this.config.hardwareWsUrl);
+      this.ws = new WebSocket(endpoint);
 
       this.ws.onopen = () => {
         if (this.currentMode === 'HARDWARE') {
@@ -483,7 +513,7 @@ export class TelemetryProvider {
             severity: 'INFO',
             sensor: 'SYSTEM',
             title: 'Hardware Link Established',
-            message: `Connected to ESP32 telemetry bridge at ${this.config.hardwareWsUrl}`,
+            message: `Connected to ESP telemetry bridge at ${endpoint}`,
             value: 'ONLINE',
             threshold: 'N/A',
             isActive: false,
@@ -533,10 +563,14 @@ export class TelemetryProvider {
       if (this.currentMode === 'HARDWARE') {
         this.connectHardwareWebSocket();
       }
-    }, 4000);
+    }, 3000);
   }
 
   private disconnectHardwareWebSocket() {
+    if (this.hardwarePollTimer) {
+      clearInterval(this.hardwarePollTimer);
+      this.hardwarePollTimer = null;
+    }
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;

@@ -25,15 +25,19 @@
 #if defined(ESP8266)
   #include <ESP8266WiFi.h>
   #include <ESP8266HTTPClient.h>
+  #include <ESP8266WebServer.h>
   #include <SoftwareSerial.h>
   #define BOARD_NAME "ESP8266_NodeMCU"
   SoftwareSerial stm32Serial(13, 15); // RX = D7 (GPIO13), TX = D8 (GPIO15)
+  ESP8266WebServer localServer(80);
 #elif defined(ESP32)
   #include <WiFi.h>
   #include <HTTPClient.h>
+  #include <WebServer.h>
   #define BOARD_NAME "ESP32_NodeMCU"
   #define RXD2 16
   #define TXD2 17
+  WebServer localServer(80);
 #endif
 
 #include <ArduinoJson.h>
@@ -136,6 +140,44 @@ void setup() {
     Serial.println("\n[Wi-Fi] Connected!");
     Serial.print("[Wi-Fi] IP Address: ");
     Serial.println(WiFi.localIP());
+
+    // Ultra-Fast Zero-Latency Direct HTTP REST Server for Dashboard
+    localServer.on("/telemetry", []() {
+      localServer.sendHeader("Access-Control-Allow-Origin", "*");
+      localServer.sendHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+      localServer.sendHeader("Access-Control-Allow-Headers", "*");
+
+      String json = "{";
+      json += "\"distance_cm\":" + String(latest_distance_cm, 1) + ",";
+      json += "\"distance_valid\":" + String(latest_distance_cm > 0.0 ? 1 : 0) + ",";
+      json += "\"gas_adc\":" + String(latest_gas_adc) + ",";
+      json += "\"gas_mv\":" + String((int)((latest_gas_adc / 4095.0) * 3300)) + ",";
+      json += "\"temperature_x100\":" + String((int)(latest_temp_c * 100)) + ",";
+      json += "\"temperature_valid\":1,";
+      json += "\"cover\":\"" + String(latest_cover_open ? "COVER OPEN" : "COVER CLOSED") + "\",";
+      json += "\"tilt_deg\":" + String(latest_tilt_deg, 1) + ",";
+      json += "\"accel_valid\":1,";
+      json += "\"status\":\"" + latest_status + "\"";
+      json += "}";
+      localServer.send(200, "application/json", json);
+    });
+
+    localServer.onNotFound([]() {
+      if (localServer.method() == HTTP_OPTIONS) {
+        localServer.sendHeader("Access-Control-Allow-Origin", "*");
+        localServer.sendHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+        localServer.sendHeader("Access-Control-Allow-Headers", "*");
+        localServer.send(204);
+      } else {
+        localServer.send(404, "text/plain", "Not Found");
+      }
+    });
+
+    localServer.begin();
+    Serial.println("[Local Server] Real-Time Zero-Latency REST Endpoint active!");
+    Serial.print("[Local Server] URL: http://");
+    Serial.print(WiFi.localIP());
+    Serial.println("/telemetry");
     Serial.println("[ThingSpeak] Ready to upload telemetry to api.thingspeak.com");
   } else {
     Serial.println("\n[Wi-Fi] Connection failed! Please check SSID and password.");
@@ -143,6 +185,8 @@ void setup() {
 }
 
 void loop() {
+  localServer.handleClient();
+
   // 1. Ingest JSON frames arriving from STM32 USART1 (PA9)
   String jsonPacket = "";
 

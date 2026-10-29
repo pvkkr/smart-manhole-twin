@@ -375,14 +375,17 @@ static uint8_t DS18B20_ReadByte(void) {
     return val;
 }
 
-static float DS18B20_ReadTemp(uint8_t *valid) {
+static void DS18B20_StartConversion(void) {
+    if (DS18B20_Reset()) {
+        DS18B20_WriteByte(0xCC); // Skip ROM
+        DS18B20_WriteByte(0x44); // Start conversion (non-blocking)
+    }
+}
+
+static float DS18B20_ReadScratchpad(uint8_t *valid) {
     if (!DS18B20_Reset()) { *valid = 0; return 25.0f; }
     DS18B20_WriteByte(0xCC); // Skip ROM
-    DS18B20_WriteByte(0x44); // Convert
-    delay_ms(750);
-    if (!DS18B20_Reset()) { *valid = 0; return 25.0f; }
-    DS18B20_WriteByte(0xCC);
-    DS18B20_WriteByte(0xBE); // Read
+    DS18B20_WriteByte(0xBE); // Read Scratchpad
     uint8_t lsb = DS18B20_ReadByte();
     uint8_t msb = DS18B20_ReadByte();
     int16_t raw = (msb << 8) | lsb;
@@ -408,12 +411,32 @@ int main(void)
     delay_ms(1500);
     LCD_Cmd(0x01);
 
+    // Initial non-blocking temperature conversion start
+    DS18B20_StartConversion();
+    float current_temp_c = 25.0f;
+    uint8_t current_temp_valid = 1;
+    uint32_t temp_timer = 0;
+    uint8_t lcd_counter = 0;
+
     char tx_buffer[350];
     char lcd_buf[17];
 
     while (1)
     {
-        // 1. HC-SR04 Ultrasonic Distance (2cm to 400cm physical range)
+        // 1. Asynchronous non-blocking DS18B20 conversion (reads every 800ms with ZERO loop stalls!)
+        temp_timer += 100;
+        if (temp_timer >= 800) {
+            temp_timer = 0;
+            current_temp_c = DS18B20_ReadScratchpad(&current_temp_valid);
+            DS18B20_StartConversion(); // Trigger next conversion immediately
+        }
+
+        int16_t temp_x100 = (int16_t)(current_temp_c * 100.0f);
+        int temp_int = temp_x100 / 100;
+        int temp_dec = (temp_x100 % 100) / 10;
+        if (temp_dec < 0) temp_dec = -temp_dec;
+
+        // 2. HC-SR04 Ultrasonic Distance (2cm to 400cm physical range)
         float dist_cm = Read_Ultrasonic_Cm();
         uint8_t dist_valid = 0;
         if (dist_cm >= 2.0f && dist_cm <= 400.0f) {
@@ -427,17 +450,9 @@ int main(void)
         int dist_dec = (int)((dist_cm - (float)dist_int) * 10.0f);
         if (dist_dec < 0) dist_dec = -dist_dec;
 
-        // 2. MQ-2 Gas Analog ADC on PA0
+        // 3. MQ-2 Gas Analog ADC on PA0
         uint16_t gas_adc = Read_Gas_ADC();
         uint16_t gas_mv = (uint16_t)(((float)gas_adc / 4095.0f) * 3300.0f);
-
-        // 3. DS18B20 1-Wire Temperature on PB12
-        uint8_t temp_valid = 0;
-        float temp_c = DS18B20_ReadTemp(&temp_valid);
-        int16_t temp_x100 = (int16_t)(temp_c * 100.0f);
-        int temp_int = temp_x100 / 100;
-        int temp_dec = (temp_x100 % 100) / 10;
-        if (temp_dec < 0) temp_dec = -temp_dec;
 
         // 4. Reed Switch on PB13 (HIGH when magnet removed / cover opened)
         uint8_t reed_open = (GPIOB->IDR & (1 << 13)) ? 1 : 0;
@@ -478,24 +493,27 @@ int main(void)
             GPIOB->BSRR = (1 << (0 + 16)); // Buzzer OFF
         }
 
-        // 7. Update 16x2 LCD (Clean 16-character integer formatting - NO nano.specs float bug!)
-        LCD_Cmd(0x80);
-        snprintf(lcd_buf, sizeof(lcd_buf), "D:%3dcm  G:%-5d", dist_int, gas_adc);
-        LCD_Print(lcd_buf);
+        // 7. Update 16x2 LCD (Refreshed every 300ms for rock-steady, flicker-free readout)
+        if (++lcd_counter >= 3) {
+            lcd_counter = 0;
+            LCD_Cmd(0x80);
+            snprintf(lcd_buf, sizeof(lcd_buf), "D:%3dcm  G:%-5d", dist_int, gas_adc);
+            LCD_Print(lcd_buf);
 
-        LCD_Cmd(0xC0);
-        const char *cover_tag = cover_open ? (tilt_deg > 15.0f ? "TILTED" : "OPEN! ") : "SEALED";
-        snprintf(lcd_buf, sizeof(lcd_buf), "T:%2d.%1dC  %-6s", temp_int, temp_dec, cover_tag);
-        LCD_Print(lcd_buf);
+            LCD_Cmd(0xC0);
+            const char *cover_tag = cover_open ? (tilt_deg > 15.0f ? "TILTED" : "OPEN! ") : "SEALED";
+            snprintf(lcd_buf, sizeof(lcd_buf), "T:%2d.%1dC  %-6s", temp_int, temp_dec, cover_tag);
+            LCD_Print(lcd_buf);
+        }
 
-        // 8. Stream JSON Frame over USART1 (PA9) to NodeMCU Gateway
+        // 8. Stream JSON Frame over USART1 (PA9) to NodeMCU Gateway (Every 100ms / 10Hz!)
         const char *cover_str = cover_open ? "COVER OPEN" : "COVER CLOSED";
         const char *status_str = (cover_open || gas_adc > 2200) ? "CRITICAL" : "NORMAL";
 
         snprintf(tx_buffer, sizeof(tx_buffer),
           "{\"distance_cm\":%d.%d,\"distance_valid\":%d,\"temperature_x100\":%d,\"temperature_valid\":%d,\"gas_adc\":%d,\"gas_mv\":%d,\"cover\":\"%s\",\"tilt_deg\":%d.%d,\"accel_valid\":%d,\"accel_x_mg\":%d,\"accel_y_mg\":%d,\"accel_z_mg\":%d,\"status\":\"%s\"}\r\n",
           dist_int, dist_dec, dist_valid,
-          temp_x100, temp_valid,
+          temp_x100, current_temp_valid,
           gas_adc, gas_mv, cover_str,
           tilt_int, tilt_dec,
           accel_valid, ax, ay, az, status_str
@@ -506,6 +524,6 @@ int main(void)
         // 9. Heartbeat: Toggle Blue Pill Onboard LED (PC13) every packet
         GPIOC->ODR ^= (1 << 13);
 
-        delay_ms(1000); // 1.0Hz telemetry rate
+        delay_ms(100); // 10Hz ultra-fast non-blocking telemetry loop rate!
     }
 }

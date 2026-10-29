@@ -13,9 +13,9 @@ export const DEFAULT_CHAMBER_CONFIG: ChamberConfig = {
   tempCriticalC: 60.0, // Critical thermal threshold
   tiltWarningDeg: 8.0, // Disturbance / displacement
   tiltCriticalDeg: 15.0, // Cover displacement / unauthorized tamper
-  telemetryIntervalMs: 1000,
-  hardwareWsUrl: 'ws://192.168.4.1:81/telemetry', // ESP32 AP default endpoint
+  telemetryIntervalMs: 100, // 10Hz ultra-fast telemetry
+  hardwareWsUrl: 'http://192.168.4.1/telemetry', // Direct ultra-fast local endpoint (or ws://...)
   thingspeakChannelId: '', // ThingSpeak Numeric Channel ID
   thingspeakReadApiKey: '', // ThingSpeak Read API Key (if private)
-  thingspeakPollIntervalMs: 15000, // 15-second polling interval (ThingSpeak standard)
+  thingspeakPollIntervalMs: 1000, // 1-second ultra-fast cloud polling (maximum ThingSpeak read speed)
 };
