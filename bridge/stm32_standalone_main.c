@@ -52,9 +52,14 @@ static void delay_ms(uint32_t ms) {
 
 // --- Direct Hardware Self-Configuration (NO .IOC NEEDED) ---
 static void Hardware_SelfConfigure(void) {
-    // 1. Enable Clocks for GPIOA, GPIOB, AFIO, ADC1, USART1
-    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_AFIOEN
-                  | RCC_APB2ENR_ADC1EN | RCC_APB2ENR_USART1EN;
+    // 1. Enable Clocks for GPIOA, GPIOB, GPIOC, AFIO, ADC1, USART1
+    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_IOPCEN
+                  | RCC_APB2ENR_AFIOEN | RCC_APB2ENR_ADC1EN | RCC_APB2ENR_USART1EN;
+
+    // Configure PC13 as Output Push-Pull 2MHz (Blue Pill Onboard LED Heartbeat)
+    GPIOC->CRH &= ~(0xF << 20);
+    GPIOC->CRH |= (0x2 << 20);
+    GPIOC->BSRR = (1 << 13); // Initial OFF
 
     // 2. Enable Serial Wire Debug (SWD on PA13/PA14 for OpenOCD) & free JTAG pins
     // This is equivalent to SYS -> Debug: Serial Wire in STM32CubeMX
@@ -365,8 +370,12 @@ int main(void)
     {
         // 1. HC-SR04 Ultrasonic Distance
         float dist_cm = Read_Ultrasonic_Cm();
-        uint8_t dist_valid = (dist_cm > 2.0f && dist_cm < 400.0f) ? 1 : 0;
+        uint8_t dist_valid = (dist_cm > 2.0f && dist_cm <= 50.0f) ? 1 : 0;
         if (!dist_valid) dist_cm = 0.0f;
+
+        int dist_int = (int)dist_cm;
+        int dist_dec = (int)((dist_cm - (float)dist_int) * 10.0f);
+        if (dist_dec < 0) dist_dec = -dist_dec;
 
         // 2. MQ-2 Gas Analog ADC on PA0
         uint16_t gas_adc = Read_Gas_ADC();
@@ -376,6 +385,9 @@ int main(void)
         uint8_t temp_valid = 0;
         float temp_c = DS18B20_ReadTemp(&temp_valid);
         int16_t temp_x100 = (int16_t)(temp_c * 100.0f);
+        int temp_int = temp_x100 / 100;
+        int temp_dec = (temp_x100 % 100) / 10;
+        if (temp_dec < 0) temp_dec = -temp_dec;
 
         // 4. Reed Switch on PB13 (HIGH when cover opened)
         uint8_t cover_open = (GPIOB->IDR & (1 << 13)) ? 1 : 0;
@@ -392,27 +404,31 @@ int main(void)
             GPIOB->BSRR = (1 << (0 + 16)); // Buzzer OFF
         }
 
-        // 7. Update 16x2 LCD
+        // 7. Update 16x2 LCD (Clean 16-character integer formatting - NO nano.specs float bug!)
         LCD_Cmd(0x80);
-        snprintf(lcd_buf, sizeof(lcd_buf), "D:%.0fcm G:%d", dist_cm, gas_adc);
+        snprintf(lcd_buf, sizeof(lcd_buf), "D:%3dcm  G:%-5d", dist_int, gas_adc);
         LCD_Print(lcd_buf);
 
         LCD_Cmd(0xC0);
-        snprintf(lcd_buf, sizeof(lcd_buf), "T:%.1fC %s", temp_c, cover_open ? "OPEN!" : "SEALED");
+        snprintf(lcd_buf, sizeof(lcd_buf), "T:%2d.%1dC  %-6s", temp_int, temp_dec, cover_open ? "OPEN!" : "SEALED");
         LCD_Print(lcd_buf);
 
-        // 8. Stream JSON Frame over USART1 (PA9) to ESP32 Gateway
+        // 8. Stream JSON Frame over USART1 (PA9) to NodeMCU Gateway
         const char *cover_str = cover_open ? "COVER OPEN" : "COVER CLOSED";
         const char *status_str = (cover_open || gas_adc > 2200) ? "CRITICAL" : "NORMAL";
 
         snprintf(tx_buffer, sizeof(tx_buffer),
-          "{\"distance_cm\":%.1f,\"distance_valid\":%d,\"temperature_x100\":%d,\"temperature_valid\":%d,\"gas_adc\":%d,\"gas_mv\":%d,\"cover\":\"%s\",\"accel_valid\":%d,\"accel_x_mg\":%d,\"accel_y_mg\":%d,\"accel_z_mg\":%d,\"status\":\"%s\"}\r\n",
-          dist_cm, dist_valid, temp_x100, temp_valid,
+          "{\"distance_cm\":%d.%d,\"distance_valid\":%d,\"temperature_x100\":%d,\"temperature_valid\":%d,\"gas_adc\":%d,\"gas_mv\":%d,\"cover\":\"%s\",\"accel_valid\":%d,\"accel_x_mg\":%d,\"accel_y_mg\":%d,\"accel_z_mg\":%d,\"status\":\"%s\"}\r\n",
+          dist_int, dist_dec, dist_valid,
+          temp_x100, temp_valid,
           gas_adc, gas_mv, cover_str,
           accel_valid, ax, ay, az, status_str
         );
 
         UART_SendString(tx_buffer);
+
+        // 9. Heartbeat: Toggle Blue Pill Onboard LED (PC13) every packet
+        GPIOC->ODR ^= (1 << 13);
 
         delay_ms(1000); // 1.0Hz telemetry rate
     }

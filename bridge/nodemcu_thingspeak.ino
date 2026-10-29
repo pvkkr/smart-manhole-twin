@@ -149,6 +149,8 @@ void loop() {
   #if defined(ESP8266)
     if (stm32Serial.available()) {
       jsonPacket = stm32Serial.readStringUntil('\n');
+    } else if (Serial.available()) {
+      jsonPacket = Serial.readStringUntil('\n');
     }
   #elif defined(ESP32)
     if (Serial2.available()) {
@@ -175,6 +177,9 @@ void loop() {
 
       Serial.printf("[STM32 Data] Dist: %.1fcm | Gas: %d | Temp: %.1fC | Cover: %s\n",
                     latest_distance_cm, latest_gas_adc, latest_temp_c, cover_str);
+    } else {
+      Serial.print("[JSON Parse Warning]: ");
+      Serial.println(jsonPacket);
     }
   }
 
