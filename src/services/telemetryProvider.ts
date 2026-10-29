@@ -38,9 +38,21 @@ export class TelemetryProvider {
   private currentMode: 'SIMULATION' | 'HARDWARE' | 'THINGSPEAK' = 'SIMULATION';
 
   constructor(initialConfig: ChamberConfig) {
-    this.config = initialConfig;
+    // Restore persisted config from localStorage if available
+    const savedConfig = this.loadConfigFromStorage();
+    this.config = savedConfig ? { ...initialConfig, ...savedConfig } : initialConfig;
+
     const initialDepth = 35; // Initial 35cm water
     const initialPercentage = Math.round((initialDepth / this.config.chamberDepthCm) * 100);
+
+    const savedMode = (typeof window !== 'undefined' && localStorage.getItem('sm_telemetry_mode')) as
+      | 'SIMULATION'
+      | 'HARDWARE'
+      | 'THINGSPEAK'
+      | null;
+
+    const startMode = savedMode || 'SIMULATION';
+    this.currentMode = startMode;
 
     this.currentState = {
       timestamp: Date.now(),
@@ -73,16 +85,46 @@ export class TelemetryProvider {
       systemStatus: 'NORMAL',
       activeAlarmsCount: 0,
 
-      telemetrySource: 'SIMULATION',
-      connectionStatus: 'SIMULATED',
+      telemetrySource: startMode,
+      connectionStatus: startMode === 'SIMULATION' ? 'SIMULATED' : 'RECONNECTING',
       lastPacketTime: Date.now(),
     };
 
     this.recordHistoryPoint(this.currentState);
+
+    // If starting in ThingSpeak or Hardware mode, auto-engage connection
+    if (startMode === 'THINGSPEAK') {
+      setTimeout(() => this.startThingspeakPolling(), 200);
+    } else if (startMode === 'HARDWARE') {
+      setTimeout(() => this.connectHardwareWebSocket(), 200);
+    }
+  }
+
+  private loadConfigFromStorage(): Partial<ChamberConfig> | null {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const raw = localStorage.getItem('sm_chamber_config');
+        if (raw) return JSON.parse(raw);
+      }
+    } catch {
+      // Ignore
+    }
+    return null;
+  }
+
+  private saveConfigToStorage(cfg: ChamberConfig) {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('sm_chamber_config', JSON.stringify(cfg));
+      }
+    } catch {
+      // Ignore
+    }
   }
 
   public updateConfig(newConfig: ChamberConfig) {
     this.config = { ...newConfig };
+    this.saveConfigToStorage(this.config);
     // Re-evaluate current state with new configuration
     this.processRawPayload(this.createCurrentRawPayload());
   }
@@ -295,6 +337,14 @@ export class TelemetryProvider {
   public setMode(mode: 'SIMULATION' | 'HARDWARE' | 'THINGSPEAK') {
     this.currentMode = mode;
     this.currentState.telemetrySource = mode;
+
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('sm_telemetry_mode', mode);
+      }
+    } catch {
+      // Ignore
+    }
 
     if (mode === 'HARDWARE') {
       this.stopThingspeakPolling();

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChamberConfig } from '../../types/telemetry';
 import { telemetryProvider } from '../../services/telemetryProvider';
 import { DEFAULT_CHAMBER_CONFIG } from '../../config/chamber';
@@ -22,6 +22,10 @@ export const SystemSettings = ({ config, onUpdateConfig }: SystemSettingsProps) 
   const [formData, setFormData] = useState<ChamberConfig>({ ...config });
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'THRESHOLDS' | 'HARDWARE' | 'DOCS'>('THRESHOLDS');
+
+  useEffect(() => {
+    setFormData({ ...config });
+  }, [config]);
 
   const handleChange = (field: keyof ChamberConfig, value: any) => {
     setFormData((prev) => ({
