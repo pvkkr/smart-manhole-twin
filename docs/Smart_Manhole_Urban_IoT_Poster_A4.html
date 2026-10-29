@@ -100,7 +100,7 @@
       background: #ffffff;
       border: 1.5px solid #0284c7;
       border-radius: 8px;
-      padding: 7mm 8mm 5mm 8mm;
+      padding: 7mm 8mm 6mm 8mm;
       box-shadow: 0 10px 30px rgba(0,0,0,0.18);
       display: flex;
       flex-direction: column;
@@ -111,10 +111,10 @@
     /* HEADER */
     .header {
       text-align: center;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
     }
     .header h1 {
-      font-size: 17.5pt;
+      font-size: 17pt;
       font-weight: 900;
       color: #0284c7;
       letter-spacing: 0.3px;
@@ -122,21 +122,21 @@
       text-transform: uppercase;
     }
     .header h2 {
-      font-size: 8.8pt;
+      font-size: 8.5pt;
       font-weight: 700;
       color: #334155;
-      margin-top: 2px;
+      margin-top: 1.5px;
       letter-spacing: 0.2px;
     }
 
     /* BATCH 8 & TEAM STRIP (NO GROUP P07) */
     .team-strip {
       display: grid;
-      grid-template-columns: 95px 1fr 1fr 1fr 1fr;
+      grid-template-columns: 90px 1fr 1fr 1fr 1fr;
       border: 1.2px solid #0284c7;
       border-radius: 6px;
       overflow: hidden;
-      margin-bottom: 6px;
+      margin-bottom: 7px;
       background: #f1f5f9;
     }
     .badge-batch {
@@ -177,146 +177,65 @@
       text-overflow: ellipsis;
     }
 
-    /* SECTION BANNER */
-    .section-banner {
-      background: #0f172a;
-      color: #ffffff;
-      font-size: 8.5pt;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 4px;
-      margin-bottom: 3px;
-      letter-spacing: 0.3px;
-    }
-
-    /* IMAGE CONTAINERS */
-    .img-card {
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    .img-card img {
-      width: 100%;
-      display: block;
-      object-fit: cover;
-    }
-    .img-caption {
-      background: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      font-size: 6.8pt;
-      font-weight: 700;
-      color: #0f172a;
-      text-align: center;
-      padding: 2.5px 4px;
-    }
-
-    /* PROFESSIONAL CIRCUIT SCHEMATIC ROW */
-    .schem-wrap {
-      margin-bottom: 6px;
-    }
-    .schem-img {
-      width: 100%;
-      height: 180px;
-      object-fit: contain;
-      background: #ffffff;
-      border: 1px solid #0284c7;
-      border-radius: 6px;
-      display: block;
-    }
-
-    /* 2-COLUMN DUAL PHOTO ROW */
-    .dual-photo-row {
+    /* 2x2 UNIFORM VISUAL GRID */
+    .grid-2x2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      margin-bottom: 6px;
-    }
-    .dual-photo-row .img-card img {
-      height: 125px;
-      object-fit: cover;
+      grid-template-rows: auto auto;
+      gap: 7px;
+      flex-grow: 1;
     }
 
-    /* BOTTOM ROW: TELEMETRY CHARTS + BULLETS */
-    .bottom-grid {
-      display: grid;
-      grid-template-columns: 310px 1fr;
-      gap: 6px;
-      margin-bottom: 5px;
-    }
-    .chart-box {
-      border: 1px solid #cbd5e1;
+    .uniform-card {
+      background: #ffffff;
+      border: 1.1px solid #0284c7;
       border-radius: 6px;
       overflow: hidden;
-      background: #ffffff;
-      display: flex;
-      flex-direction: column;
-    }
-    .chart-box img {
-      width: 100%;
-      height: 145px;
-      object-fit: contain;
-    }
-    .chart-caption {
-      background: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      font-size: 6.8pt;
-      font-weight: 700;
-      color: #0f172a;
-      text-align: center;
-      padding: 2px 4px;
-    }
-
-    .specs-card {
-      background: #f8fafc;
-      border: 1px solid #0284c7;
-      border-radius: 6px;
-      padding: 5px 7px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
-    .specs-group {
-      margin-bottom: 3px;
-    }
-    .specs-group:last-child {
-      margin-bottom: 0;
-    }
-    .specs-title {
-      font-size: 7.8pt;
+
+    .card-banner {
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 8pt;
       font-weight: 800;
-      color: #0369a1;
-      margin-bottom: 1.5px;
+      padding: 3px 6px;
+      letter-spacing: 0.3px;
+    }
+
+    .card-img-wrap {
+      flex-grow: 1;
       display: flex;
       align-items: center;
-      gap: 4px;
+      justify-content: center;
+      background: #ffffff;
+      padding: 2px;
     }
-    .specs-list {
-      list-style: none;
-      padding: 0;
+    .card-img-wrap img {
+      width: 100%;
+      height: 195px;
+      object-fit: contain;
+      display: block;
     }
-    .specs-list li {
-      font-size: 7pt;
-      color: #1e293b;
+
+    .card-caption {
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      font-size: 6.8pt;
+      font-weight: 600;
+      color: #334155;
+      text-align: center;
+      padding: 2.5px 5px;
       line-height: 1.25;
-      position: relative;
-      padding-left: 9px;
-      margin-bottom: 1px;
-    }
-    .specs-list li::before {
-      content: "•";
-      position: absolute;
-      left: 0;
-      color: #0284c7;
-      font-weight: bold;
     }
 
     /* FOOTER */
     .footer {
       border-top: 1.5px solid #0284c7;
-      padding-top: 3px;
+      padding-top: 4px;
+      margin-top: 5px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -339,7 +258,7 @@
   <div class="toolbar no-print">
     <div>
       <h3>Smart Manhole Utilities Urban IoT — A4 Poster</h3>
-      <p style="font-size: 9.5pt; color: #94a3b8;">Optimized for A4 Color Xerox / High-Resolution Printout • Batch 8</p>
+      <p style="font-size: 9.5pt; color: #94a3b8;">Uniform 2x2 Grid • Color Xerox Ready • Batch 8</p>
     </div>
     <button class="print-btn" onclick="window.print()">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -350,13 +269,13 @@
     </button>
   </div>
 
-  <!-- A4 Single-Sheet Poster Canvas -->
+  <!-- A4 Single-Sheet Poster Canvas (Uniform 2x2 Layout) -->
   <div class="poster-sheet">
 
     <!-- 1. HEADER BANNER -->
     <div class="header">
       <h1>Smart Manhole Utilities Urban IoT</h1>
-      <h2>Autonomous Sub-Surface Monitoring, Real-Time Cloud Telemetry &amp; 3D Digital Twin SCADA</h2>
+      <h2>Autonomous Sub-Surface Infrastructure Monitoring, Real-Time Cloud Telemetry &amp; 3D Digital Twin SCADA</h2>
     </div>
 
     <!-- 2. BATCH 8 & TEAM BAR (NO GROUP P07) -->
@@ -380,68 +299,56 @@
       </div>
     </div>
 
-    <!-- 3. PROFESSIONAL CIRCUIT SCHEMATIC (IMAGE 1 - CENTERPIECE) -->
-    <div class="schem-wrap">
-      <div class="section-banner">1. PROFESSIONAL CIRCUIT SCHEMATIC &amp; HARDWARE INTERCONNECT</div>
-      <img src="poster_assets/poster_circuit_schematic.png" alt="Professional Circuit Schematic Diagram" class="schem-img">
-      <div class="img-caption"><b>Electrical Interconnect CAD Blueprint:</b> Bare-Metal STM32F103 Master, NodeMCU ESP8266 Gateway, 6-Sensor Bus &amp; 1kΩ/2kΩ Voltage Divider</div>
-    </div>
+    <!-- 3. UNIFORM 2x2 VISUAL GRID (NO REAL HARDWARE PHOTOS) -->
+    <div class="grid-2x2">
 
-    <!-- 4. DUAL PICTURES (IMAGES 2 & 3) -->
-    <div>
-      <div class="section-banner">2. PHYSICAL HARDWARE PROTOTYPE &amp; 3D DIGITAL TWIN SCADA INTERFACE</div>
-      <div class="dual-photo-row">
-        <div class="img-card">
-          <img src="poster_assets/poster_hw_prototype.jpg" alt="Physical Hardware Prototype">
-          <div class="img-caption"><b>Benchtop Hardware Circuit:</b> 16x2 LCD + NodeMCU V3 + STM32 Core</div>
+      <!-- PANEL 1: 3D Chamber Physical Model -->
+      <div class="uniform-card">
+        <div class="card-banner">1. 3D SUB-SURFACE CHAMBER &amp; SENSOR CONE</div>
+        <div class="card-img-wrap">
+          <img src="poster_assets/poster_chamber_3d_model.png" alt="3D Chamber Model">
         </div>
-        <div class="img-card">
-          <img src="poster_assets/poster_scada_twin.jpg" alt="3D SCADA Digital Twin">
-          <div class="img-caption"><b>Live 3D Digital Twin:</b> Physics-accurate water level &amp; lid tilt dynamics</div>
+        <div class="card-caption">
+          <b>Physical 3D Model:</b> Ultrasonic Beam, Water Level (33.4cm), Toxic Gas Zone &amp; Sealed Enclosure
         </div>
       </div>
-    </div>
 
-    <!-- 5. TELEMETRY CHARTS & BULLET SPECS (IMAGE 4 + TEXT) -->
-    <div>
-      <div class="section-banner">3. MULTI-SENSOR LIVE TELEMETRY &amp; FIELD PERFORMANCE</div>
-      <div class="bottom-grid">
-        <div class="chart-box">
-          <img src="poster_assets/poster_telemetry_chart.png" alt="Multi-Sensor Live Telemetry Graphs">
-          <div class="chart-caption"><b>Real-Time Multi-Sensor Telemetry Graphs</b> (ThingSpeak Channel #3558043)</div>
+      <!-- PANEL 2: CAD Circuit Schematic -->
+      <div class="uniform-card">
+        <div class="card-banner">2. PROFESSIONAL CAD ELECTRONIC SCHEMATIC</div>
+        <div class="card-img-wrap">
+          <img src="poster_assets/poster_cad_circuit_uniform.png" alt="CAD Circuit Schematic">
         </div>
-
-        <div class="specs-card">
-          <div class="specs-group">
-            <div class="specs-title">Key Project Capabilities:</div>
-            <ul class="specs-list">
-              <li><b>Flood Sensing:</b> HC-SR04 continuous water depth (2–400cm).</li>
-              <li><b>Worker Safety:</b> MQ-2 toxic sewer gas alarm threshold (ADC &gt;2400).</li>
-              <li><b>Cover Anti-Theft:</b> MPU-6050 3-axis tilt + Reed switch seal.</li>
-            </ul>
-          </div>
-
-          <div class="specs-group">
-            <div class="specs-title">Engineering Bottlenecks Solved:</div>
-            <ul class="specs-list">
-              <li><b>ARM Float Fix:</b> Nano.specs float stripped; resolved with %d.%d.</li>
-              <li><b>I2C Lockup:</b> Eliminated bus freeze with strict I2C_Stop &amp; settle.</li>
-              <li><b>Zero Latency:</b> Sub-20ms local REST (/telemetry) + 1s ThingSpeak.</li>
-            </ul>
-          </div>
-
-          <div class="specs-group">
-            <div class="specs-title">Hardware &amp; Interfacing:</div>
-            <ul class="specs-list">
-              <li><b>Dual Core:</b> Bare-metal STM32 10Hz loop + NodeMCU ESP8266.</li>
-              <li><b>Voltage Divider:</b> 1kΩ/2kΩ passive divider protects PA2 pin.</li>
-            </ul>
-          </div>
+        <div class="card-caption">
+          <b>Complete Hardware Bus:</b> Bare-Metal STM32, NodeMCU Gateway, 6 Sensors &amp; 1kΩ/2kΩ Divider
         </div>
       </div>
+
+      <!-- PANEL 3: 3D Digital Twin SCADA -->
+      <div class="uniform-card">
+        <div class="card-banner">3. 3D DIGITAL TWIN SCADA PLATFORM</div>
+        <div class="card-img-wrap">
+          <img src="poster_assets/poster_scada_twin_uniform.png" alt="3D SCADA Twin">
+        </div>
+        <div class="card-caption">
+          <b>WebGL SCADA Twin:</b> Three.js physics rendering lid pitch/roll tilt &amp; chamber surcharge
+        </div>
+      </div>
+
+      <!-- PANEL 4: Live Telemetry Analytics -->
+      <div class="uniform-card">
+        <div class="card-banner">4. LIVE TELEMETRY &amp; SYSTEM PERFORMANCE</div>
+        <div class="card-img-wrap">
+          <img src="poster_assets/poster_telemetry_uniform.png" alt="Live Telemetry Graphs">
+        </div>
+        <div class="card-caption">
+          <b>Multi-Sensor Field Analytics:</b> Real-time curves (ThingSpeak #3558043) &amp; engineering specs
+        </div>
+      </div>
+
     </div>
 
-    <!-- 6. FOOTER -->
+    <!-- 4. FOOTER -->
     <div class="footer">
       <span><b>Batch 8</b></span>
       <span><b>ThingSpeak IoT Cloud:</b> Channel <span class="footer-highlight">#3558043</span> (1s Polling)</span>
