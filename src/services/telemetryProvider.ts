@@ -42,7 +42,7 @@ export class TelemetryProvider {
     const savedConfig = this.loadConfigFromStorage();
     this.config = savedConfig ? { ...initialConfig, ...savedConfig } : initialConfig;
 
-    const initialDepth = 35; // Initial 35cm water
+    const initialDepth = 15; // Initial 15cm water for 50cm chamber
     const initialPercentage = Math.round((initialDepth / this.config.chamberDepthCm) * 100);
 
     const savedMode = (typeof window !== 'undefined' && localStorage.getItem('sm_telemetry_mode')) as
@@ -104,7 +104,13 @@ export class TelemetryProvider {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         const raw = localStorage.getItem('sm_chamber_config');
-        if (raw) return JSON.parse(raw);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.chamberDepthCm === 150) {
+            parsed.chamberDepthCm = 50;
+          }
+          return parsed;
+        }
       }
     } catch {
       // Ignore

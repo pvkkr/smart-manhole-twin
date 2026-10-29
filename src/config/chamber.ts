@@ -1,8 +1,8 @@
 import { ChamberConfig } from '../types/telemetry';
 
 export const DEFAULT_CHAMBER_CONFIG: ChamberConfig = {
-  chamberDepthCm: 150, // 1.5m industrial standard inspection chamber
-  chamberDiameterCm: 90, // 900mm concrete riser
+  chamberDepthCm: 50, // 50cm benchtop testing / miniature manhole model
+  chamberDiameterCm: 30, // 30cm scaled diameter
   minUltrasonicDistanceCm: 3, // HC-SR04 deadband threshold
   maxUltrasonicDistanceCm: 400, // HC-SR04 practical upper limit
   waterWarningPercentage: 50, // 50% chamber filled

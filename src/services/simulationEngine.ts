@@ -17,7 +17,7 @@ export class SimulationEngine {
   private scenarioStep: number = 0;
 
   // Manual / current baseline values
-  private waterDepthCm: number = 25;
+  private waterDepthCm: number = 15; // 15cm baseline in 50cm chamber
   private gasAdc: number = 420;
   private temperatureC: number = 24.2;
   private coverOpen: boolean = false;
