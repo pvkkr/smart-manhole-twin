@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Manhole Utilities Urban IoT - A4 Project Poster (Batch 8 / P077)</title>
+  <style>
+    /* ========================================================
+       A4 PORTRAIT SPECIFICATION OPTIMIZED FOR COLOR XEROX
+       Page size: 210mm x 297mm (Standard A4)
+       Margin: 6mm tight margins for maximum visual impact
+       Background: Crisp white for zero toner waste & smear-free xerox
+       ======================================================== */
+    @page {
+      size: A4 portrait;
+      margin: 6mm;
+    }
+
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        background: #ffffff !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .poster-sheet {
+        border: none !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+        height: 100% !important;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #e2e8f0;
+      color: #0f172a;
+      line-height: 1.3;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Floating Print Action Toolbar */
+    .toolbar {
+      width: 100%;
+      max-width: 210mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    }
+    .toolbar h3 {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+    .print-btn {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #ffffff;
+      border: none;
+      padding: 8px 18px;
+      font-size: 10.5pt;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 3px 10px rgba(2, 132, 199, 0.4);
+      transition: all 0.2s ease;
+    }
+    .print-btn:hover {
+      background: linear-gradient(135deg, #0369a1, #1d4ed8);
+      transform: translateY(-1px);
+    }
+
+    /* A4 Poster Canvas */
+    .poster-sheet {
+      width: 210mm;
+      min-height: 297mm;
+      max-height: 297mm;
+      background: #ffffff;
+      border: 1.5px solid #0284c7;
+      border-radius: 8px;
+      padding: 8mm 9mm 6mm 9mm;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    /* HEADER */
+    .header {
+      text-align: center;
+      margin-bottom: 5px;
+    }
+    .header h1 {
+      font-size: 17.5pt;
+      font-weight: 900;
+      color: #0284c7;
+      letter-spacing: 0.3px;
+      line-height: 1.15;
+      text-transform: uppercase;
+    }
+    .header h2 {
+      font-size: 8.8pt;
+      font-weight: 700;
+      color: #334155;
+      margin-top: 2px;
+      letter-spacing: 0.2px;
+    }
+
+    /* BATCH 8 & TEAM STRIP */
+    .team-strip {
+      display: grid;
+      grid-template-columns: 82px 105px 1fr 1fr 1fr 1fr;
+      border: 1.2px solid #0284c7;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 7px;
+      background: #f1f5f9;
+    }
+    .badge-batch {
+      background: #0284c7;
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 8.5pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4px 2px;
+      letter-spacing: 0.5px;
+    }
+    .badge-group {
+      background: #0f172a;
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 8pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4px 2px;
+      border-right: 1px solid #cbd5e1;
+    }
+    .member-box {
+      padding: 3px 4px;
+      text-align: center;
+      border-right: 1px solid #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .member-box:last-child {
+      border-right: none;
+    }
+    .member-id {
+      font-family: monospace;
+      font-weight: 800;
+      font-size: 7.5pt;
+      color: #0284c7;
+    }
+    .member-name {
+      font-weight: 700;
+      font-size: 7.2pt;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* SECTION BANNER */
+    .section-banner {
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 8.5pt;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    /* IMAGE CONTAINERS */
+    .img-card {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .img-card img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+    }
+    .img-caption {
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      font-size: 7pt;
+      font-weight: 700;
+      color: #0f172a;
+      text-align: center;
+      padding: 3px 4px;
+    }
+
+    /* ARCHITECTURE ROW */
+    .arch-wrap {
+      margin-bottom: 7px;
+    }
+    .arch-img {
+      width: 100%;
+      height: 124px;
+      object-fit: contain;
+      background: #ffffff;
+      border: 1px solid #0284c7;
+      border-radius: 6px;
+    }
+
+    /* 2-COLUMN DUAL PHOTO ROW */
+    .dual-photo-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      margin-bottom: 7px;
+    }
+    .dual-photo-row .img-card img {
+      height: 135px;
+      object-fit: cover;
+    }
+
+    /* BOTTOM ROW: TELEMETRY CHARTS + BULLETS */
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 310px 1fr;
+      gap: 7px;
+      margin-bottom: 6px;
+    }
+    .chart-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+    }
+    .chart-box img {
+      width: 100%;
+      height: 155px;
+      object-fit: contain;
+    }
+    .chart-caption {
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      font-size: 7pt;
+      font-weight: 700;
+      color: #0f172a;
+      text-align: center;
+      padding: 2px 4px;
+    }
+
+    .specs-card {
+      background: #f8fafc;
+      border: 1px solid #0284c7;
+      border-radius: 6px;
+      padding: 6px 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .specs-group {
+      margin-bottom: 4px;
+    }
+    .specs-group:last-child {
+      margin-bottom: 0;
+    }
+    .specs-title {
+      font-size: 7.8pt;
+      font-weight: 800;
+      color: #0369a1;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .specs-list {
+      list-style: none;
+      padding: 0;
+    }
+    .specs-list li {
+      font-size: 7.1pt;
+      color: #1e293b;
+      line-height: 1.25;
+      position: relative;
+      padding-left: 10px;
+      margin-bottom: 1.5px;
+    }
+    .specs-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #0284c7;
+      font-weight: bold;
+    }
+
+    /* FOOTER */
+    .footer {
+      border-top: 1.5px solid #0284c7;
+      padding-top: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 7.2pt;
+      font-weight: 700;
+      color: #475569;
+    }
+    .footer-highlight {
+      color: #0284c7;
+    }
+    .footer a {
+      color: #0284c7;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Print Toolbar (Hidden during Color Xerox print) -->
+  <div class="toolbar no-print">
+    <div>
+      <h3>Smart Manhole Utilities Urban IoT — A4 Poster</h3>
+      <p style="font-size: 9.5pt; color: #94a3b8;">Optimized for A4 Color Xerox / High-Resolution Printout • Batch 8</p>
+    </div>
+    <button class="print-btn" onclick="window.print()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+        <path d="M6 14h12v8H6z"/>
+      </svg>
+      Print to A4 / Xerox
+    </button>
+  </div>
+
+  <!-- A4 Single-Sheet Poster Canvas -->
+  <div class="poster-sheet">
+
+    <!-- 1. HEADER BANNER -->
+    <div class="header">
+      <h1>Smart Manhole Utilities Urban IoT</h1>
+      <h2>Autonomous Sub-Surface Monitoring, Real-Time Cloud Telemetry &amp; 3D Digital Twin SCADA</h2>
+    </div>
+
+    <!-- 2. BATCH 8 & TEAM BAR -->
+    <div class="team-strip">
+      <div class="badge-batch">BATCH 8</div>
+      <div class="badge-group">GROUP P077</div>
+      <div class="member-box">
+        <span class="member-id">2400040006</span>
+        <span class="member-name">P V Kishor Kumar Reddy</span>
+      </div>
+      <div class="member-box">
+        <span class="member-id">2400040004</span>
+        <span class="member-name">T Perumal</span>
+      </div>
+      <div class="member-box">
+        <span class="member-id">2400040303</span>
+        <span class="member-name">Chundu Uday Sai</span>
+      </div>
+      <div class="member-box">
+        <span class="member-id">2400040339</span>
+        <span class="member-name">Ayan Chowdhury</span>
+      </div>
+    </div>
+
+    <!-- 3. SYSTEM ARCHITECTURE (IMAGE 1) -->
+    <div class="arch-wrap">
+      <div class="section-banner">1. SYSTEM ARCHITECTURE &amp; END-TO-END TELEMETRY PIPELINE</div>
+      <img src="poster_assets/poster_arch_diagram.png" alt="Architecture Diagram" class="arch-img">
+    </div>
+
+    <!-- 4. DUAL PICTURES (IMAGES 2 & 3) -->
+    <div>
+      <div class="section-banner">2. HARDWARE PROTOTYPE &amp; 3D DIGITAL TWIN SCADA INTERFACE</div>
+      <div class="dual-photo-row">
+        <div class="img-card">
+          <img src="poster_assets/poster_hw_prototype.jpg" alt="Physical Hardware Prototype">
+          <div class="img-caption"><b>Physical Hardware Circuit:</b> 16x2 LCD + NodeMCU V3 + STM32 Core</div>
+        </div>
+        <div class="img-card">
+          <img src="poster_assets/poster_scada_twin.jpg" alt="3D SCADA Digital Twin">
+          <div class="img-caption"><b>Live 3D Digital Twin:</b> Physics-accurate water level &amp; lid tilt dynamics</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. TELEMETRY CHARTS & BULLET SPECS (IMAGE 4 + TEXT) -->
+    <div>
+      <div class="section-banner">3. MULTI-SENSOR LIVE TELEMETRY &amp; FIELD VERIFICATION</div>
+      <div class="bottom-grid">
+        <div class="chart-box">
+          <img src="poster_assets/poster_telemetry_chart.png" alt="Multi-Sensor Live Telemetry Graphs">
+          <div class="chart-caption"><b>Real-Time Multi-Sensor Telemetry Graphs</b> (ThingSpeak Channel #3558043)</div>
+        </div>
+
+        <div class="specs-card">
+          <div class="specs-group">
+            <div class="specs-title">Key Project Objectives:</div>
+            <ul class="specs-list">
+              <li><b>Flood Pre-emption:</b> HC-SR04 ultrasonic continuous water surcharge sensing.</li>
+              <li><b>Worker Safety:</b> MQ-2 toxic sewer gas alarm threshold (ADC &gt;2400).</li>
+              <li><b>Anti-Tamper &amp; Theft:</b> MPU-6050 3-axis tilt + Reed switch cover seal.</li>
+            </ul>
+          </div>
+
+          <div class="specs-group">
+            <div class="specs-title">Engineering Bottlenecks Solved:</div>
+            <ul class="specs-list">
+              <li><b>ARM Float Fix:</b> Replaced nano.specs float stripping with integer math (%d.%d).</li>
+              <li><b>I2C Lockup:</b> Eliminated bus freeze with strict I2C_Stop &amp; restart settle.</li>
+              <li><b>Zero Latency:</b> Sub-20ms local REST (/telemetry) + 1s ThingSpeak cache-bust.</li>
+            </ul>
+          </div>
+
+          <div class="specs-group">
+            <div class="specs-title">Hardware &amp; Safety Interfacing:</div>
+            <ul class="specs-list">
+              <li><b>Dual Core:</b> STM32 deterministic bare-metal loop + NodeMCU ESP8266.</li>
+              <li><b>Echo Voltage Divider:</b> 1kΩ/2kΩ circuit safeguarding STM32 PA2 pin.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. FOOTER -->
+    <div class="footer">
+      <span><b>Batch 8 • Project Group P077</b></span>
+      <span><b>ThingSpeak IoT Cloud:</b> Channel <span class="footer-highlight">#3558043</span> (1s Polling)</span>
+      <span><b>Live 3D SCADA Twin:</b> <a href="https://pvkkr.github.io/smart-manhole-twin/" target="_blank">pvkkr.github.io/smart-manhole-twin/</a></span>
+    </div>
+
+  </div>
+
+</body>
+</html>
