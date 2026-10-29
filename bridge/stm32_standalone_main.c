@@ -531,20 +531,22 @@ int main(void)
             GPIOB->BSRR = (1 << (0 + 16)); // Buzzer OFF
         }
 
-        // 7. Update 16x2 LCD (Refreshed every 300ms for rock-steady, flicker-free readout)
+        // 7. Update 16x2 LCD (All-in-One: D, G, T, TL, and SEAL/OPEN visible simultaneously!)
         if (++lcd_counter >= 3) {
             lcd_counter = 0;
+
+            // Row 1: Distance & Gas (e.g. "D: 25cm   G:790 ")
             LCD_Cmd(0x80);
-            snprintf(lcd_buf, sizeof(lcd_buf), "D:%3dcm  G:%-5d", dist_int, gas_adc);
+            snprintf(lcd_buf, sizeof(lcd_buf), "D:%3dcm   G:%-5d", dist_int, gas_adc);
             LCD_Print(lcd_buf);
 
+            // Row 2: Temp, Tilt & Seal/Open (e.g. "T:28C TL: 0 SEAL" or "T:28C TL:35 OPEN")
             LCD_Cmd(0xC0);
+            const char *seal_str = cover_open ? "OPEN" : "SEAL";
             if (accel_valid) {
-                // Live Tilt Angle in degrees: e.g. "T:28.2C TLT: 0d " or "T:28.2C TLT:25d!"
-                char alert = cover_open ? '!' : ' ';
-                snprintf(lcd_buf, sizeof(lcd_buf), "T:%2d.%1dC TLT:%2dd%c", temp_int, temp_dec, tilt_int, alert);
+                snprintf(lcd_buf, sizeof(lcd_buf), "T:%2dC TL:%2d %-4s", temp_int, tilt_int, seal_str);
             } else {
-                snprintf(lcd_buf, sizeof(lcd_buf), "T:%2d.%1dC  NO-MPU ", temp_int, temp_dec);
+                snprintf(lcd_buf, sizeof(lcd_buf), "T:%2dC TL:-- %-4s", temp_int, seal_str);
             }
             LCD_Print(lcd_buf);
         }
