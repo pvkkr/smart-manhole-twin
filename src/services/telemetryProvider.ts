@@ -52,7 +52,8 @@ export class TelemetryProvider {
       | 'THINGSPEAK'
       | null;
 
-    const startMode = savedMode || 'SIMULATION';
+    // Default to THINGSPEAK so live cloud telemetry displays immediately when loaded
+    const startMode = savedMode || 'THINGSPEAK';
     this.currentMode = startMode;
 
     this.currentState = {
@@ -109,6 +110,14 @@ export class TelemetryProvider {
           const parsed = JSON.parse(raw);
           if (parsed.chamberDepthCm === 150) {
             parsed.chamberDepthCm = 50;
+          }
+          // Auto-migrate empty or stale channel IDs to live channel 3558043
+          if (!parsed.thingspeakChannelId || parsed.thingspeakChannelId === '2489123' || parsed.thingspeakChannelId === '') {
+            parsed.thingspeakChannelId = '3558043';
+          }
+          // Auto-migrate old IP to actual NodeMCU IP 192.168.137.156
+          if (!parsed.hardwareWsUrl || parsed.hardwareWsUrl.includes('192.168.4.1')) {
+            parsed.hardwareWsUrl = 'http://192.168.137.156/telemetry';
           }
           return parsed;
         }
@@ -393,16 +402,12 @@ export class TelemetryProvider {
   }
 
   private async fetchThingspeakFeed() {
-    if (this.currentMode !== 'THINGSPEAK' || !this.config.thingspeakChannelId) {
-      if (this.currentMode === 'THINGSPEAK') {
-        this.currentState.connectionStatus = 'DISCONNECTED';
-        this.notify();
-      }
+    if (this.currentMode !== 'THINGSPEAK') {
       return;
     }
 
     try {
-      const channelId = this.config.thingspeakChannelId.trim();
+      const channelId = (this.config.thingspeakChannelId || '3558043').trim();
       const apiKey = this.config.thingspeakReadApiKey?.trim() || '';
       // Cache-busting timestamp prevents browser and CDN from holding 300-second stale cache
       const cacheBuster = Date.now();
@@ -487,6 +492,26 @@ export class TelemetryProvider {
 
     // 1. Direct Ultra-Fast Local HTTP Polling (200ms latency, zero library dependencies!)
     if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+      const isHttpsPage = typeof window !== 'undefined' && window.location.protocol === 'https:';
+      const isHttpEndpoint = endpoint.startsWith('http://');
+
+      if (isHttpsPage && isHttpEndpoint) {
+        console.warn(
+          'Browser Mixed Content Notice: Direct LAN HTTP is blocked on HTTPS websites. Auto-engaging ThingSpeak HTTPS Cloud Bridge.'
+        );
+        alarmManager.addEvent({
+          severity: 'INFO',
+          sensor: 'SYSTEM',
+          title: 'Direct LAN HTTP Blocked on HTTPS',
+          message: 'Browsers block plain http:// LAN calls from https:// sites. Automatically using ThingSpeak Cloud Bridge (Channel 3558043) for 100% secure HTTPS telemetry.',
+          value: 'HTTPS_FALLBACK',
+          threshold: 'N/A',
+          isActive: false,
+        });
+        setTimeout(() => this.setMode('THINGSPEAK'), 50);
+        return;
+      }
+
       const pollLocalHttp = async () => {
         if (this.currentMode !== 'HARDWARE') return;
         try {

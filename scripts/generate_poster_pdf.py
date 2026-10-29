@@ -244,7 +244,7 @@ def build_poster(filename="Smart_Manhole_Urban_IoT_Poster.pdf"):
     footer_data = [
         [
             Paragraph("<b>Project:</b> Smart Manhole Cover Monitoring for Utilities • Group P077", ParagraphStyle('F1', fontName='Helvetica-Bold', fontSize=8, textColor=colors.HexColor('#334155'))),
-            Paragraph("<b>Cloud Telemetry:</b> ThingSpeak IoT Channel #2489123 • 1-Second Read Polling", ParagraphStyle('F2', fontName='Helvetica', fontSize=8, textColor=colors.HexColor('#64748b'), alignment=TA_CENTER)),
+            Paragraph("<b>Cloud Telemetry:</b> ThingSpeak IoT Channel #3558043 • 1-Second Read Polling", ParagraphStyle('F2', fontName='Helvetica', fontSize=8, textColor=colors.HexColor('#64748b'), alignment=TA_CENTER)),
             Paragraph("<b>Digital Twin SCADA:</b> <font color='#0284c7'>https://pvkkr.github.io/smart-manhole-twin/</font>", ParagraphStyle('F3', fontName='Helvetica-Bold', fontSize=8, textColor=colors.HexColor('#0284c7'), alignment=TA_RIGHT))
         ]
     ]

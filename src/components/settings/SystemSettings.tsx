@@ -287,10 +287,10 @@ export const SystemSettings = ({ config, onUpdateConfig }: SystemSettingsProps) 
                   value={formData.thingspeakChannelId || ''}
                   onChange={(e) => handleChange('thingspeakChannelId', e.target.value)}
                   className="w-full bg-graphite-950 border border-slate-700 rounded p-2 text-white font-mono focus:border-scada-cyan focus:outline-none"
-                  placeholder="e.g. 2489123"
+                  placeholder="3558043"
                 />
                 <span className="text-[10px] text-slate-500 mt-1 block">
-                  Found on your ThingSpeak Channel overview page.
+                  Found on your ThingSpeak Channel overview page (e.g. 3558043).
                 </span>
               </div>
 
@@ -352,16 +352,16 @@ export const SystemSettings = ({ config, onUpdateConfig }: SystemSettingsProps) 
             </div>
 
             <div>
-              <label className="text-slate-300 block mb-1 font-bold">Telemetry WebSocket Endpoint URL:</label>
+              <label className="text-slate-300 block mb-1 font-bold">Local Telemetry Endpoint URL (HTTP or WebSocket):</label>
               <input
                 type="text"
                 value={formData.hardwareWsUrl}
                 onChange={(e) => handleChange('hardwareWsUrl', e.target.value)}
                 className="w-full bg-graphite-950 border border-slate-700 rounded p-2 text-white font-mono focus:border-scada-cyan focus:outline-none"
-                placeholder="ws://192.168.4.1:81/telemetry"
+                placeholder="http://192.168.137.156/telemetry"
               />
               <span className="text-[10px] text-slate-500 mt-1 block">
-                Standard format: ws://[NODEMCU_IP]:[PORT]/[ROUTE]. Default SoftAP is ws://192.168.4.1:81/telemetry.
+                Local REST: http://192.168.137.156/telemetry (works on local servers or localhost; for HTTPS GitHub Pages, use ThingSpeak Cloud above to avoid Mixed Content).
               </span>
             </div>
 
