@@ -157,7 +157,13 @@ export class TelemetryProvider {
   /**
    * Process raw JSON payload received either from simulation or ESP32 bridge
    */
-  public processRawPayload(payload: RawTelemetryPayload) {
+  public processRawPayload(
+    payload: RawTelemetryPayload,
+    source: 'SIMULATION' | 'HARDWARE' | 'THINGSPEAK' = 'SIMULATION'
+  ) {
+    if (source === 'SIMULATION' && this.currentMode !== 'SIMULATION') {
+      return; // Never overwrite real hardware or ThingSpeak cloud telemetry with simulation ticks!
+    }
     const now = payload.timestamp || Date.now();
 
     // 1. Water level calculation
@@ -389,7 +395,7 @@ export class TelemetryProvider {
         timestamp: this.currentState.lastPacketTime,
       };
 
-      this.processRawPayload(payload);
+      this.processRawPayload(payload, 'THINGSPEAK');
     } catch (err) {
       console.warn('ThingSpeak polling error:', err);
       if (this.currentMode === 'THINGSPEAK') {
@@ -430,7 +436,7 @@ export class TelemetryProvider {
             typeof parsed.distance_cm === 'number' &&
             typeof parsed.gas_adc === 'number'
           ) {
-            this.processRawPayload(parsed);
+            this.processRawPayload(parsed, 'HARDWARE');
           }
         } catch {
           console.warn('Failed to parse hardware telemetry frame:', event.data);

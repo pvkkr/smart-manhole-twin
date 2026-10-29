@@ -245,6 +245,10 @@ export class SimulationEngine {
   }
 
   private publishTelemetry() {
+    if (telemetryProvider.getState().telemetrySource !== 'SIMULATION') {
+      return; // Do not emit simulation data if user has switched to ThingSpeak or Hardware
+    }
+
     const config = telemetryProvider.getConfig();
 
     // ultrasonic_distance = chamber_depth - water_depth
