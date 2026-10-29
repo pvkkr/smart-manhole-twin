@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <math.h>
 
 /* --- Pin Assignments ---
  * PA0  : MQ-2 Gas Sensor (Analog In)
@@ -136,6 +137,7 @@ static uint16_t Read_Gas_ADC(void) {
 }
 
 // --- HC-SR04 Ultrasonic Reading (cm) ---
+// Uses direct DWT cycle-counter for microsecond precision (2cm to 400cm range)
 static float Read_Ultrasonic_Cm(void) {
     // 10us Trigger Pulse on PA1
     GPIOA->BSRR = (1 << (1 + 16)); // Low
@@ -144,24 +146,31 @@ static float Read_Ultrasonic_Cm(void) {
     delay_us(10);
     GPIOA->BSRR = (1 << (1 + 16)); // Low
 
-    uint32_t timeout = 60000;
-    uint32_t count = 0;
+    // Timeout: 35ms (corresponds to ~6 meters max)
+    uint32_t timeout_cycles = SystemCoreClock / 28;
+    uint32_t t_start = DWT->CYCCNT;
 
     // Wait for Echo (PA2) to go HIGH
     while (!(GPIOA->IDR & (1 << 2))) {
-        if (++count > timeout) return -1.0f;
-        delay_us(1);
+        if ((DWT->CYCCNT - t_start) > timeout_cycles) {
+            return -1.0f; // Timeout waiting for echo start
+        }
     }
 
-    // Measure duration
-    uint32_t duration_us = 0;
+    // Measure duration while Echo is HIGH
+    uint32_t t_echo_start = DWT->CYCCNT;
     while (GPIOA->IDR & (1 << 2)) {
-        duration_us++;
-        delay_us(1);
-        if (duration_us > 30000) return -1.0f; // ~5m max
+        if ((DWT->CYCCNT - t_echo_start) > timeout_cycles) {
+            return -1.0f; // Timeout (out of range)
+        }
     }
+    uint32_t echo_cycles = DWT->CYCCNT - t_echo_start;
 
-    return (duration_us * 0.0343f) / 2.0f;
+    // Convert CPU cycles to microseconds
+    float us = (float)echo_cycles / ((float)SystemCoreClock / 1000000.0f);
+    // Speed of sound: 343 m/s = 0.0343 cm/us -> dist = (us * 0.0343) / 2 = us / 58.3
+    float dist = us / 58.3f;
+    return dist;
 }
 
 // --- Bit-Banged Reliable I2C (PB8 SCL, PB9 SDA) ---
@@ -232,31 +241,67 @@ static uint8_t I2C_ReadByte(uint8_t ack) {
     return byte;
 }
 
-// --- MPU6050 Driver ---
+// --- MPU6050 Driver (Auto-detects 0x68 and 0x69) ---
+static uint8_t mpu_addr = 0x68;
+
 static uint8_t MPU6050_Init_Direct(void) {
+    // Try 0x68 first (standard AD0 to GND)
+    mpu_addr = 0x68;
     I2C_Start();
-    if (!I2C_WriteByte(MPU6050_ADDR << 1)) { I2C_Stop(); return 0; }
-    I2C_WriteByte(0x6B); // PWR_MGMT_1
-    I2C_WriteByte(0x00); // Wake up
+    if (I2C_WriteByte(mpu_addr << 1)) {
+        I2C_WriteByte(0x6B); // PWR_MGMT_1
+        I2C_WriteByte(0x00); // Wake up MPU6050
+        I2C_Stop();
+        return 1;
+    }
     I2C_Stop();
-    return 1;
+
+    // If 0x68 didn't respond, try 0x69 (AD0 pulled HIGH)
+    mpu_addr = 0x69;
+    I2C_Start();
+    if (I2C_WriteByte(mpu_addr << 1)) {
+        I2C_WriteByte(0x6B); // PWR_MGMT_1
+        I2C_WriteByte(0x00); // Wake up MPU6050
+        I2C_Stop();
+        return 1;
+    }
+    I2C_Stop();
+
+    mpu_addr = 0x68; // reset to default
+    return 0;
 }
 
 static void MPU6050_Read_Direct(int16_t *ax, int16_t *ay, int16_t *az, uint8_t *valid) {
     I2C_Start();
-    if (!I2C_WriteByte(MPU6050_ADDR << 1)) { I2C_Stop(); *valid = 0; return; }
-    I2C_WriteByte(0x3B);
+    if (!I2C_WriteByte(mpu_addr << 1)) { 
+        I2C_Stop(); 
+        *valid = 0; 
+        return; 
+    }
+    I2C_WriteByte(0x3B); // ACCEL_XOUT_H
     I2C_Start();
-    I2C_WriteByte((MPU6050_ADDR << 1) | 1);
+    if (!I2C_WriteByte((mpu_addr << 1) | 1)) { 
+        I2C_Stop(); 
+        *valid = 0; 
+        return; 
+    }
 
-    int16_t rx = (I2C_ReadByte(1) << 8) | I2C_ReadByte(1);
-    int16_t ry = (I2C_ReadByte(1) << 8) | I2C_ReadByte(1);
-    int16_t rz = (I2C_ReadByte(1) << 8) | I2C_ReadByte(0);
+    uint8_t xh = I2C_ReadByte(1);
+    uint8_t xl = I2C_ReadByte(1);
+    uint8_t yh = I2C_ReadByte(1);
+    uint8_t yl = I2C_ReadByte(1);
+    uint8_t zh = I2C_ReadByte(1);
+    uint8_t zl = I2C_ReadByte(0); // NACK on last byte
     I2C_Stop();
 
-    *ax = (int16_t)((rx / 16384.0f) * 1000.0f);
-    *ay = (int16_t)((ry / 16384.0f) * 1000.0f);
-    *az = (int16_t)((rz / 16384.0f) * 1000.0f);
+    int16_t rx = (int16_t)((xh << 8) | xl);
+    int16_t ry = (int16_t)((yh << 8) | yl);
+    int16_t rz = (int16_t)((zh << 8) | zl);
+
+    // ±2g range: 16384 LSB/g -> convert to milli-g (mg)
+    *ax = (int16_t)(((int32_t)rx * 1000) / 16384);
+    *ay = (int16_t)(((int32_t)ry * 1000) / 16384);
+    *az = (int16_t)(((int32_t)rz * 1000) / 16384);
     *valid = 1;
 }
 
@@ -368,10 +413,15 @@ int main(void)
 
     while (1)
     {
-        // 1. HC-SR04 Ultrasonic Distance
+        // 1. HC-SR04 Ultrasonic Distance (2cm to 400cm physical range)
         float dist_cm = Read_Ultrasonic_Cm();
-        uint8_t dist_valid = (dist_cm > 2.0f && dist_cm <= 50.0f) ? 1 : 0;
-        if (!dist_valid) dist_cm = 0.0f;
+        uint8_t dist_valid = 0;
+        if (dist_cm >= 2.0f && dist_cm <= 400.0f) {
+            dist_valid = 1;
+        } else {
+            dist_valid = 0;
+            dist_cm = 0.0f;
+        }
 
         int dist_int = (int)dist_cm;
         int dist_dec = (int)((dist_cm - (float)dist_int) * 10.0f);
@@ -389,13 +439,37 @@ int main(void)
         int temp_dec = (temp_x100 % 100) / 10;
         if (temp_dec < 0) temp_dec = -temp_dec;
 
-        // 4. Reed Switch on PB13 (HIGH when cover opened)
-        uint8_t cover_open = (GPIOB->IDR & (1 << 13)) ? 1 : 0;
+        // 4. Reed Switch on PB13 (HIGH when magnet removed / cover opened)
+        uint8_t reed_open = (GPIOB->IDR & (1 << 13)) ? 1 : 0;
 
         // 5. MPU6050 Accelerometer
         int16_t ax = 0, ay = 0, az = 1000;
         uint8_t accel_valid = 0;
         MPU6050_Read_Direct(&ax, &ay, &az, &accel_valid);
+
+        // Auto-retry init if not responding
+        if (!accel_valid) {
+            MPU6050_Init_Direct();
+        }
+
+        // Tilt calculation in degrees:
+        // Angle of displacement from flat horizontal position
+        float tilt_deg = 0.0f;
+        if (accel_valid) {
+            float ax_f = (float)ax;
+            float ay_f = (float)ay;
+            float az_f = (float)az;
+            float horiz = sqrtf(ax_f * ax_f + ay_f * ay_f);
+            if (fabsf(az_f) > 0.1f || horiz > 0.1f) {
+                tilt_deg = atan2f(horiz, fabsf(az_f)) * 57.29578f;
+            }
+        }
+        int tilt_int = (int)tilt_deg;
+        int tilt_dec = (int)((tilt_deg - (float)tilt_int) * 10.0f);
+        if (tilt_dec < 0) tilt_dec = -tilt_dec;
+
+        // Manhole cover is considered OPEN if reed switch is OPEN OR cover is tilted > 15 degrees
+        uint8_t cover_open = reed_open || (tilt_deg > 15.0f);
 
         // 6. Buzzer Control on PB0 (Turn on if cover open or gas critical)
         if (cover_open || gas_adc > 2200) {
@@ -410,7 +484,8 @@ int main(void)
         LCD_Print(lcd_buf);
 
         LCD_Cmd(0xC0);
-        snprintf(lcd_buf, sizeof(lcd_buf), "T:%2d.%1dC  %-6s", temp_int, temp_dec, cover_open ? "OPEN!" : "SEALED");
+        const char *cover_tag = cover_open ? (tilt_deg > 15.0f ? "TILTED" : "OPEN! ") : "SEALED";
+        snprintf(lcd_buf, sizeof(lcd_buf), "T:%2d.%1dC  %-6s", temp_int, temp_dec, cover_tag);
         LCD_Print(lcd_buf);
 
         // 8. Stream JSON Frame over USART1 (PA9) to NodeMCU Gateway
@@ -418,10 +493,11 @@ int main(void)
         const char *status_str = (cover_open || gas_adc > 2200) ? "CRITICAL" : "NORMAL";
 
         snprintf(tx_buffer, sizeof(tx_buffer),
-          "{\"distance_cm\":%d.%d,\"distance_valid\":%d,\"temperature_x100\":%d,\"temperature_valid\":%d,\"gas_adc\":%d,\"gas_mv\":%d,\"cover\":\"%s\",\"accel_valid\":%d,\"accel_x_mg\":%d,\"accel_y_mg\":%d,\"accel_z_mg\":%d,\"status\":\"%s\"}\r\n",
+          "{\"distance_cm\":%d.%d,\"distance_valid\":%d,\"temperature_x100\":%d,\"temperature_valid\":%d,\"gas_adc\":%d,\"gas_mv\":%d,\"cover\":\"%s\",\"tilt_deg\":%d.%d,\"accel_valid\":%d,\"accel_x_mg\":%d,\"accel_y_mg\":%d,\"accel_z_mg\":%d,\"status\":\"%s\"}\r\n",
           dist_int, dist_dec, dist_valid,
           temp_x100, temp_valid,
           gas_adc, gas_mv, cover_str,
+          tilt_int, tilt_dec,
           accel_valid, ax, ay, az, status_str
         );
 

@@ -173,10 +173,28 @@ void loop() {
       const char* cover_str = doc["cover"] | "COVER CLOSED";
       latest_cover_open  = (strcmp(cover_str, "COVER OPEN") == 0) ? 1 : 0;
       
+      // Parse tilt angle or compute from accelerometer
+      if (doc.containsKey("tilt_deg")) {
+        latest_tilt_deg = doc["tilt_deg"] | 0.0;
+      } else if (doc.containsKey("accel_x_mg")) {
+        float ax = doc["accel_x_mg"] | 0;
+        float ay = doc["accel_y_mg"] | 0;
+        float az = doc["accel_z_mg"] | 1000;
+        float horiz = sqrt(ax * ax + ay * ay);
+        if (abs(az) > 1.0 || horiz > 1.0) {
+          latest_tilt_deg = atan2(horiz, abs(az)) * 57.2958;
+        }
+      }
+
+      // If tilt is significant (>15°), manhole cover is physically displaced
+      if (latest_tilt_deg > 15.0) {
+        latest_cover_open = 1;
+      }
+
       latest_status      = (const char*)(doc["status"] | "NORMAL");
 
-      Serial.printf("[STM32 Data] Dist: %.1fcm | Gas: %d | Temp: %.1fC | Cover: %s\n",
-                    latest_distance_cm, latest_gas_adc, latest_temp_c, cover_str);
+      Serial.printf("[STM32 Data] Dist: %.1fcm | Gas: %d | Temp: %.1fC | Tilt: %.1f deg | Cover: %s\n",
+                    latest_distance_cm, latest_gas_adc, latest_temp_c, latest_tilt_deg, cover_str);
     } else {
       Serial.print("[JSON Parse Warning]: ");
       Serial.println(jsonPacket);

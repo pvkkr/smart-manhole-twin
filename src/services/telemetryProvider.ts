@@ -242,7 +242,8 @@ export class TelemetryProvider {
       payload.accel_z_mg,
       isAccelValid
     );
-    const tiltStatus = getTiltSeverity(tiltCalc.magnitudeDeg, this.config);
+    const magnitudeDeg = payload.tilt_deg !== undefined ? payload.tilt_deg : tiltCalc.magnitudeDeg;
+    const tiltStatus = getTiltSeverity(magnitudeDeg, this.config);
 
     // 6. Overall System Status
     let systemStatus: TelemetryState['systemStatus'] = 'NORMAL';
@@ -288,7 +289,7 @@ export class TelemetryProvider {
       accelZMg: payload.accel_z_mg,
       tiltPitchDeg: tiltCalc.pitchDeg,
       tiltRollDeg: tiltCalc.rollDeg,
-      tiltMagnitudeDeg: tiltCalc.magnitudeDeg,
+      tiltMagnitudeDeg: magnitudeDeg,
       tiltStatus,
 
       systemStatus,
@@ -435,6 +436,11 @@ export class TelemetryProvider {
       const coverVal = data.field5;
       const isCoverOpen = coverVal === '1' || coverVal === 'OPEN' || coverVal === 1;
 
+      // Synthesize 3D acceleration vector from tilt angle for 3D physics:
+      const tiltRad = (tilt * Math.PI) / 180;
+      const ax = Math.round(1000 * Math.sin(tiltRad));
+      const az = Math.round(1000 * Math.cos(tiltRad));
+
       const payload: RawTelemetryPayload = {
         distance_cm: dist,
         distance_valid: dist > 0 ? 1 : 0,
@@ -442,12 +448,13 @@ export class TelemetryProvider {
         temperature_valid: 1,
         gas_adc: gas,
         gas_mv: convertGasAdcToMv(gas),
-        cover: isCoverOpen ? 'COVER OPEN' : 'COVER CLOSED',
+        cover: (isCoverOpen || tilt > 15) ? 'COVER OPEN' : 'COVER CLOSED',
         accel_valid: 1,
-        accel_x_mg: 0,
+        accel_x_mg: ax,
         accel_y_mg: 0,
-        accel_z_mg: 1000,
-        status: (data.field6 as any) || (isCoverOpen || gas > this.config.gasCriticalAdc ? 'CRITICAL' : 'NORMAL'),
+        accel_z_mg: az,
+        tilt_deg: tilt,
+        status: (data.field6 as any) || ((isCoverOpen || tilt > 15 || gas > this.config.gasCriticalAdc) ? 'CRITICAL' : 'NORMAL'),
         timestamp: this.currentState.lastPacketTime,
       };
 

@@ -14,6 +14,7 @@ export interface RawTelemetryPayload {
   accel_x_mg: number; // Accelerometer X in milli-g
   accel_y_mg: number; // Accelerometer Y in milli-g
   accel_z_mg: number; // Accelerometer Z in milli-g (typically ~1000mg at rest)
+  tilt_deg?: number; // Direct tilt magnitude in degrees (e.g. from ThingSpeak field4)
   status: 'NORMAL' | 'WARNING' | 'CRITICAL';
   timestamp?: number;
 }
